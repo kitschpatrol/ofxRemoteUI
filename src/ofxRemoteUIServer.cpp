@@ -2141,7 +2141,9 @@ void ofxRemoteUIServer::sendLogToClient(string message){
 		try{
 			oscSender.sendMessage(m);
 			RLOG_NOTICE << "RUI_LOG(" + message + ")";
+			#ifdef OF_AVAILABLE
 			onScreenNotifications.addNotification(message);
+			#endif
 		}catch(exception e){
 			RLOG_ERROR << "Exception sendLogToClient " << e.what() ;
 		}
