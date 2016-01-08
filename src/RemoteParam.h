@@ -9,6 +9,12 @@
 #ifndef emptyExample_RemoteParam_h
 #define emptyExample_RemoteParam_h
 
+#ifdef CINDER_AVAILABLE
+#include "cinder/Log.h"
+#endif
+
+using namespace std;
+
 #include <stdio.h>
 #include <sstream>
 
@@ -66,7 +72,6 @@ struct DecodedMessage{
 #define ofColor myColor
 
 struct myColor{
-
 	myColor(){}
 	myColor(int rr, int gg, int bb, int aa){
 		r = rr;	g = gg;	b = bb; a = aa;
@@ -84,10 +89,20 @@ struct myColor{
 		struct { unsigned char r, g, b, a; };
 		unsigned char v[4];
 	};
-#ifdef CINDER_CINDER //if cinder available, define an easy port to cinderColor
-#warning "Compiling for Cinder!"
-	cinder::ColorA8u toCinder(){
-		return cinder::ColorA8u(r,g,b,a);
+#ifdef CINDER_AVAILABLE //if cinder available, define an easy port to cinderColor
+	//#warning "Compiling for Cinder!"
+
+	// Construct color from cinder color
+	myColor(ci::ColorA8u color){
+		r = color.r;
+		g = color.g;
+		b = color.b;
+		a = color.a;
+	}
+	
+	// TODO more of these?
+	ci::ColorA8u toCinder(){
+		return ci::ColorA8u(r,g,b,a);
 	}
 #endif
 };
@@ -259,15 +274,27 @@ struct RemoteUIServerCallBackArg{
 	string group;
 };
 
-
-
 #ifdef OF_AVAILABLE
 	#define RLOG_NOTICE		(ofLogNotice("ofxRemoteUI"))
 	#define RLOG_ERROR		(ofLogError("ofxRemoteUI"))
 	#define RLOG_WARNING		(ofLogWarning("ofxRemoteUI"))
 	#define RLOG_VERBOSE		(ofLogVerbose("ofxRemoteUI"))
+#elif defined(CINDER_AVAILABLE)
+	// First, re-wrap cinder logging macros to take stream input
+	#define CI_STREAM_LOG_V (::cinder::log::Entry( ci::log::LEVEL_VERBOSE , ::cinder::log::Location( CINDER_CURRENT_FUNCTION, __FILE__, __LINE__ ) ))
+	#define CI_STREAM_LOG_D (::cinder::log::Entry( ci::log::LEVEL_DEBUG , ::cinder::log::Location( CINDER_CURRENT_FUNCTION, __FILE__, __LINE__ ) ))
+	#define CI_STREAM_LOG_I (::cinder::log::Entry( ci::log::LEVEL_INFO , ::cinder::log::Location( CINDER_CURRENT_FUNCTION, __FILE__, __LINE__ ) ))
+	#define CI_STREAM_LOG_W (::cinder::log::Entry( ci::log::LEVEL_WARNING , ::cinder::log::Location( CINDER_CURRENT_FUNCTION, __FILE__, __LINE__ ) ))
+	#define CI_STREAM_LOG_E (::cinder::log::Entry( ci::log::LEVEL_ERROR , ::cinder::log::Location( CINDER_CURRENT_FUNCTION, __FILE__, __LINE__ ) ))
+	#define CI_STREAM_LOG_F (::cinder::log::Entry( ci::log::LEVEL_FATAL , ::cinder::log::Location( CINDER_CURRENT_FUNCTION, __FILE__, __LINE__ ) ))
+
+	#define RLOG_NOTICE (CI_STREAM_LOG_I)
+	#define RLOG_ERROR (CI_STREAM_LOG_E)
+	#define RLOG_WARNING (CI_STREAM_LOG_W)
+	#define RLOG_VERBOSE (CI_STREAM_LOG_V)
 #else
-	#define RLOG_NOTICE		(cout << endl) //TODO!
+	//TODO!
+	#define RLOG_NOTICE		(cout << endl)
 	#define RLOG_ERROR		(cout << endl)
 	#define RLOG_WARNING		(cout << endl)
 	#define RLOG_VERBOSE		(cout << endl)

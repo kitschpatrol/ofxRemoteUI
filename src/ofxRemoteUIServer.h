@@ -11,13 +11,25 @@
 
 // you will need to add this to your "Header Search Path" for ofxOsc to compile
 // ../../../addons/ofxOsc/libs ../../../addons/ofxOsc/libs/oscpack ../../../addons/ofxOsc/libs/oscpack/src ../../../addons/ofxOsc/libs/oscpack/src/ip ../../../addons/ofxOsc/libs/oscpack/src/ip/posix ../../../addons/ofxOsc/libs/oscpack/src/ip/win32 ../../../addons/ofxOsc/libs/oscpack/src/osc ../../../addons/ofxOsc/src
-#include "ofxOsc.h"
-#include "ofxXmlSettings.h"
 #include "ofxRemoteUI.h"
+
+#include "ofxXmlSettings.h"
+
+#ifdef OF_AVAILABLE
+#include "ofxOsc.h"
+#include "ofxRemoteUISimpleNotifications.h"
+#endif
+
+#ifdef CINDER_AVAILABLE
+#include "cinder/Cinder.h"
+#include "OscSender.h"
+#include "OscListener.h"
+#endif
+
 #include <map>
 #include <set>
 #include <vector>
-#include "ofxRemoteUISimpleNotifications.h"
+
 #ifdef USE_OFX_FONTSTASH
 	#include "ofxFontStash.h"
 #endif
@@ -122,6 +134,13 @@ public:
 
 	bool builtInClientIsVisible(){return showUI;}
 
+	
+	#ifdef CINDER_AVAILABLE
+	ci::signals::Signal<void(RemoteUIServerCallBackArg)>& getSignalCallback() {
+		return cbSignal;
+	};
+	#endif
+	
 #ifdef OF_AVAILABLE
 
 	void setUiColumnWidth(int w);
@@ -234,6 +253,13 @@ private:
 
 	vector			<string> paramsToWatch;
 
+	
+	void			prepareForExit();
+	
+	#ifdef CINDER_AVAILABLE
+	ci::signals::Signal<void(RemoteUIServerCallBackArg)> cbSignal;
+	#endif
+	
 #ifdef OF_AVAILABLE
 	
 	void			_appExited(ofEventArgs &e);

@@ -35,13 +35,28 @@
 #define OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM_WCN(pName, val, enumMin, enumMax, menuList, ...)	\
 ( ofxRemoteUIServer::instance()->shareParam( pName, (int*)&val, enumMin, enumMax, menuList, ##__VA_ARGS__ ) )
 
-//use this macro to share ofColors
+#ifdef CINDER_AVAILABLE
+
+//use this macro to share cinder colors... doesn't need to go through .v
+#define OFX_REMOTEUI_SERVER_SHARE_COLOR_PARAM(color, ...)				\
+( ofxRemoteUIServer::instance()->shareParam( #color, (unsigned char*)&color[0], ##__VA_ARGS__ ) )
+
+//use this macro to share cinder colors with a custom string in the name... doesn't need to go through .v
+#define OFX_REMOTEUI_SERVER_SHARE_COLOR_PARAM_WCN(pName, color, ...)    \
+( ofxRemoteUIServer::instance()->shareParam( pName, (unsigned char*)&color[0], ##__VA_ARGS__ ) )
+
+#else
+
+// use this macro to share ofColors colors
 #define OFX_REMOTEUI_SERVER_SHARE_COLOR_PARAM(color, ...)				\
 ( ofxRemoteUIServer::instance()->shareParam( #color, (unsigned char*)&color.v[0], ##__VA_ARGS__ ) )
 
-//use this macro to share ofColors with a custom string for the name
+
+//use this macro to share of colors with a custom string in the name
 #define OFX_REMOTEUI_SERVER_SHARE_COLOR_PARAM_WCN(pName, color, ...)    \
 ( ofxRemoteUIServer::instance()->shareParam( pName, (unsigned char*)&color.v[0], ##__VA_ARGS__ ) )
+
+#endif
 
 /*set a new group for the upcoming params, this also sets a new color*/
 #define OFX_REMOTEUI_SERVER_SET_UPCOMING_PARAM_GROUP(g)					\
@@ -170,6 +185,19 @@
 
 #endif
 
+#ifdef CINDER_AVAILABLE
+
+/*Cinder uses signals instead of events to pass callbacks.
+ This sets up the server-client signal callback function. This will be called on important events
+ and param updates from the UI. Supplied method should have the signature:
+ void SomeClass::serverCallback(RemoteUIServerCallBackArg arg);
+*/
+#define OFX_REMOTEUI_SERVER_SET_CALLBACK_SIGNAL(serverSignalCallback)				\
+( ofxRemoteUIServer::instance()->getSignalCallback().connect(std::bind(serverSignalCallback, this, std::placeholders::_1)) )
+
+#endif
+
+
 // shorter macros //
 #define RUI_SETUP					OFX_REMOTEUI_SERVER_SETUP
 #define RUI_SHARE_PARAM				OFX_REMOTEUI_SERVER_SHARE_PARAM
@@ -181,6 +209,7 @@
 #define RUI_NEW_GROUP				OFX_REMOTEUI_SERVER_SET_UPCOMING_PARAM_GROUP
 #define RUI_NEW_COLOR				OFX_REMOTEUI_SERVER_SET_NEW_COLOR
 #define RUI_SET_CALLBACK			OFX_REMOTEUI_SERVER_SET_CALLBACK
+#define RUI_SET_SIGNAL				OFX_REMOTEUI_SERVER_SET_CALLBACK_SIGNAL
 #define	RUI_LOAD_FROM_XML			OFX_REMOTEUI_SERVER_LOAD_FROM_XML
 #define	RUI_SAVE_TO_XML				OFX_REMOTEUI_SERVER_SAVE_TO_XML
 #define RUI_START_THREADED			OFX_REMOTEUI_SERVER_START_THREADED

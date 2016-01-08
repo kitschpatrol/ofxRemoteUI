@@ -1,4 +1,3 @@
-
 #include "ofStolenUtils.h"
 #include <string.h>
 
@@ -18,6 +17,6 @@ float ofToFloat(const std::string& floatString) {
 }
 
 float ofClamp(float value, float min, float max) {
+	// Or use glm::clamp...
 	return value < min ? min : value > max ? max : value;
 }
-

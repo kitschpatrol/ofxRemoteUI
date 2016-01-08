@@ -22,11 +22,9 @@
 #include <sstream>
 #include <iomanip>
 
-
 int ofToInt(const std::string& intString) ;
 float ofToFloat(const std::string& floatString);
 float ofClamp(float value, float min, float max) ;
-
 
 template <class T>
 std::string ofToString(const T& value){

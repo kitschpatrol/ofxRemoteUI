@@ -9,9 +9,28 @@
 #ifndef _ofxRemoteUI__
 #define _ofxRemoteUI__
 
+// Detect frameworks
+#if defined(OF_VERSION_MINOR)
+#define OF_AVAILABLE
+#elif defined(CINDER_VERSION)
+#define CINDER_AVAILABLE
+#endif
+
+#ifdef CINDER_AVAILABLE
+#include "ofStolenUtils.h"
+// Use Cinder's built-in OSC block has nearly the same interface as OF's.
+// A few tweaks are still required here and there.
+#include "OscSender.h"
+#include "OscListener.h"
+typedef ci::osc::Message ofxOscMessage;
+typedef ci::osc::Sender ofxOscSender;
+typedef ci::osc::Listener ofxOscReceiver;
+#else
 // you will need to add this to your "Header Search Path" for ofxOsc to compile
 // ../../../addons/ofxOsc/libs ../../../addons/ofxOsc/libs/oscpack ../../../addons/ofxOsc/libs/oscpack/src ../../../addons/ofxOsc/libs/oscpack/src/ip ../../../addons/ofxOsc/libs/oscpack/src/ip/posix ../../../addons/ofxOsc/libs/oscpack/src/ip/win32 ../../../addons/ofxOsc/libs/oscpack/src/osc ../../../addons/ofxOsc/src
 #include "ofxOsc.h"
+#endif
+
 #include <set>
 #include <vector>
 #include <map>
@@ -54,13 +73,6 @@
 
 #define OFXREMOTEUI_PARAM_NAME_XML_KEY						"paramName"
 #define OFXREMOTEUI_UNKNOWN_PARAM_NAME_XML_KEY				"unnamedParamName"
-
-
-#ifdef OF_VERSION_MINOR
-    #define OF_AVAILABLE
-#else
-    //#error "no OF"
-#endif
 
 #include "RemoteParam.h"
 
@@ -268,8 +280,8 @@ protected:
 
 	bool							verbose_;
 	bool							readyToSend;
-	ofxOscSender					oscSender;
-	ofxOscReceiver					oscReceiver;
+	ofxOscSender			oscSender;
+	ofxOscReceiver		oscReceiver;
 
 
 	float							timeCounter;
