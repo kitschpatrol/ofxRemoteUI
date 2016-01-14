@@ -22,6 +22,7 @@
 
 #ifdef CINDER_AVAILABLE
 #include "cinder/Cinder.h"
+#include "cinder/app/App.h"
 #include "OscSender.h"
 #include "OscListener.h"
 #endif

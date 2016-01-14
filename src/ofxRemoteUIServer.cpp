@@ -7,14 +7,17 @@
 //
 
 
-#ifdef TARGET_WIN32
+#ifdef _WINDOWS
 #include <winsock2.h>
+#include <direct.h>
+#include "dirent_vs.h"
 #endif
 
 #include <iostream>
 #include <algorithm>
 #include <string>
 #include <string.h>
+
 #ifdef __APPLE__
 	#include "dirent.h"
 	#include <mach-o/dyld.h>	/* _NSGetExecutablePath */
@@ -34,6 +37,7 @@ using Poco::Util::Application;
 #endif
 
 #ifdef CINDER_AVAILABLE
+#include "cinder/Cinder.h"
 #include "cinder/app/App.h"
 #endif
 
@@ -413,8 +417,8 @@ void ofxRemoteUIServer::saveGroupToXML(string fileName, string groupName, bool o
 		d.create(true);
 	}
 	#else
-	#if defined(_WIN32)
-	_mkdir(path.c_str());
+	#if defined(_WINDOWS)
+	_mkdir(fileName.c_str());
 	#else
 	mkdir(fileName.c_str(), 0777);
 	#endif
@@ -836,8 +840,8 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_){
 			d.create(true);
 		}
 	#else
-	#if defined(_WIN32)
-		_mkdir(getFinalPath(OFXREMOTEUI_PRESET_DIR));
+	#ifdef _WINDOWS
+		_mkdir(getFinalPath(OFXREMOTEUI_PRESET_DIR).c_str());
 	#else
 		mkdir(getFinalPath(OFXREMOTEUI_PRESET_DIR).c_str(), (mode_t)0777);
 	#endif
@@ -906,7 +910,7 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_){
 		}
 
 		#ifdef OF_AVAILABLE
-		#ifdef TARGET_WIN32
+		#ifdef _WINDOWS
 		if (multicastIP == "255.255.255.255"){
 			doBroadcast = false; //windows crashes on bradcast if no devices are up!
 			RLOG_WARNING << "no network interface found, we will not broadcast ourselves";
@@ -1654,7 +1658,7 @@ void ofxRemoteUIServer::handleBroadcast(){
     #ifdef TARGET_OSX
 				_NSGetExecutablePath(pathbuf, &bufsize);
     #else
-        #ifdef TARGET_WIN32
+        #ifdef _WINDOWS
 				GetModuleFileNameA( NULL, pathbuf, bufsize ); //no idea why, but GetModuleFileName() is not defined?
         #else
 

@@ -12,7 +12,7 @@
 #include "uriencode.h"
 #include <sstream>
 
-#if !defined(__APPLE__) && !defined(TARGET_WIN32)
+#if !defined(__APPLE__) && !defined(_WINDOWS)
     #ifndef __linux__
         #define __linux__
     #endif
@@ -25,10 +25,10 @@
 #include <errno.h>
 #endif
 
-#ifdef TARGET_WIN32
+#ifdef _WINDOWS
+#include <WinSock2.h>
 #include <windows.h>
 #include <iphlpapi.h>
-#include <WinSock2.h>
 #pragma comment(lib, "iphlpapi.lib")
 #endif
 
@@ -245,7 +245,7 @@ string ofxRemoteUI::getMyIP(string userChosenInteface, string & subnetMask){
 
 #endif
 
-#ifdef TARGET_WIN32
+#ifdef _WINDOWS
 	ULONG buflen = sizeof(IP_ADAPTER_INFO);
 	IP_ADAPTER_INFO *pAdapterInfo = (IP_ADAPTER_INFO *)malloc(buflen);
 
@@ -270,7 +270,7 @@ string ofxRemoteUI::getMyIP(string userChosenInteface, string & subnetMask){
 	return output;
 }
 
-#ifdef TARGET_WIN32
+#ifdef _WINDOWS
 void GetHostName(std::string& host_name){
     WSAData wsa_data;
     int ret_code;

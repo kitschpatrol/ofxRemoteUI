@@ -208,7 +208,7 @@ using namespace std;
 
 const char *get_filename_ext(const char *filename) ;
 
-#ifdef TARGET_WIN32
+#ifdef _WINDOWS
 void GetHostName(std::string& host_name);
 #endif
 

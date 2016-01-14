@@ -10,6 +10,8 @@
 #define emptyExample_RemoteParam_h
 
 #ifdef CINDER_AVAILABLE
+#include "cinder/Cinder.h"
+#include "cinder/app/App.h"
 #include "cinder/Log.h"
 #endif
 
