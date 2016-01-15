@@ -27,6 +27,15 @@
 #define OFX_REMOTEUI_SERVER_SHARE_PARAM_WCN(pName, val, ...)			\
 ( ofxRemoteUIServer::instance()->shareParam( pName, &val, ##__VA_ARGS__ ) )
 
+
+// use this macro to share float getter / setter functions
+#define OFX_REMOTEUI_SERVER_SHARE_FLOAT_GETTER_SETTER_PARAM(getter, setter, ...)						\
+( ofxRemoteUIServer::instance()->shareParam( #getter, getter, setter, ##__VA_ARGS__ ) )
+
+#define OFX_REMOTEUI_SERVER_SHARE_FLOAT_GETTER_SETTER_PARAM_WCN(pName, getter, setter, val, ...)			\
+( ofxRemoteUIServer::instance()->shareParam( pName, getter, setter, ##__VA_ARGS__ ) )
+
+
 //use this macro to share enums + enumList; enum list can be vector<string> or string[]
 #define OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM(val, enumMin, enumMax, menuList, ...)	\
 ( ofxRemoteUIServer::instance()->shareParam( #val, (int*)&val,enumMin, enumMax, menuList, ##__VA_ARGS__ ) )
@@ -202,6 +211,8 @@
 #define RUI_SETUP					OFX_REMOTEUI_SERVER_SETUP
 #define RUI_SHARE_PARAM				OFX_REMOTEUI_SERVER_SHARE_PARAM
 #define RUI_SHARE_PARAM_WCN			OFX_REMOTEUI_SERVER_SHARE_PARAM_WCN
+#define RUI_SHARE_FGS_PARAM			OFX_REMOTEUI_SERVER_SHARE_FLOAT_GETTER_SETTER_PARAM
+#define RUI_SHARE_FGS_PARAM_WCN			OFX_REMOTEUI_SERVER_SHARE_FLOAT_GETTER_SETTER_PARAM_WCN
 #define RUI_SHARE_ENUM_PARAM		OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM
 #define RUI_SHARE_ENUM_PARAM_WCN    OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM_WCN
 #define RUI_SHARE_COLOR_PARAM		OFX_REMOTEUI_SERVER_SHARE_COLOR_PARAM
