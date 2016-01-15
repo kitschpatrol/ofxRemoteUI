@@ -32,7 +32,7 @@
 #define OFX_REMOTEUI_SERVER_SHARE_FLOAT_GETTER_SETTER_PARAM(getter, setter, ...)						\
 ( ofxRemoteUIServer::instance()->shareParam( #getter, getter, setter, ##__VA_ARGS__ ) )
 
-#define OFX_REMOTEUI_SERVER_SHARE_FLOAT_GETTER_SETTER_PARAM_WCN(pName, getter, setter, val, ...)			\
+#define OFX_REMOTEUI_SERVER_SHARE_FLOAT_GETTER_SETTER_PARAM_WCN(pName, getter, setter, ...)			\
 ( ofxRemoteUIServer::instance()->shareParam( pName, getter, setter, ##__VA_ARGS__ ) )
 
 
