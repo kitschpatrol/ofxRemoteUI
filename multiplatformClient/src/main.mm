@@ -2,13 +2,13 @@
 #include "testApp.h"
 
 //========================================================================
-int main( ){
+int main() {
 
 #ifdef TARGET_OF_IOS
 
-	ofAppiOSWindow * iOSWindow = new ofAppiOSWindow();
-	if ( [[UIScreen mainScreen] scale] > 1 ){
-		//if ( ofxiPhoneGetDeviceType() != OFXIPHONE_DEVICE_IPAD )
+	ofAppiOSWindow *iOSWindow = new ofAppiOSWindow();
+	if ([[UIScreen mainScreen] scale] > 1) {
+		// if ( ofxiPhoneGetDeviceType() != OFXIPHONE_DEVICE_IPAD )
 		iOSWindow->enableRetina();
 	}
 
@@ -17,7 +17,7 @@ int main( ){
 
 #else
 
-	ofSetupOpenGL(450,600,OF_WINDOW);			// <-------- setup the GL context
+	ofSetupOpenGL(450, 600, OF_WINDOW); // <-------- setup the GL context
 
 	// this kicks off the running of my app
 	// can be OF_WINDOW or OF_FULLSCREEN
@@ -25,5 +25,4 @@ int main( ){
 	ofRunApp(new testApp());
 
 #endif
-
 }

@@ -20,59 +20,61 @@
 #include "ofStolenUtils.h"
 // Use Cinder's built-in OSC block has nearly the same interface as OF's.
 // A few tweaks are still required here and there.
-#include "OscSender.h"
 #include "OscListener.h"
+#include "OscSender.h"
 typedef ci::osc::Message ofxOscMessage;
 typedef ci::osc::Sender ofxOscSender;
 typedef ci::osc::Listener ofxOscReceiver;
 #else
 // you will need to add this to your "Header Search Path" for ofxOsc to compile
-// ../../../addons/ofxOsc/libs ../../../addons/ofxOsc/libs/oscpack ../../../addons/ofxOsc/libs/oscpack/src ../../../addons/ofxOsc/libs/oscpack/src/ip ../../../addons/ofxOsc/libs/oscpack/src/ip/posix ../../../addons/ofxOsc/libs/oscpack/src/ip/win32 ../../../addons/ofxOsc/libs/oscpack/src/osc ../../../addons/ofxOsc/src
+// ../../../addons/ofxOsc/libs ../../../addons/ofxOsc/libs/oscpack ../../../addons/ofxOsc/libs/oscpack/src ../../../addons/ofxOsc/libs/oscpack/src/ip
+// ../../../addons/ofxOsc/libs/oscpack/src/ip/posix ../../../addons/ofxOsc/libs/oscpack/src/ip/win32 ../../../addons/ofxOsc/libs/oscpack/src/osc
+// ../../../addons/ofxOsc/src
 #include "ofxOsc.h"
 #endif
 
+#include <map>
 #include <set>
 #include <vector>
-#include <map>
 
-#if __cplusplus>=201103L || defined(_MSC_VER)
-	#include <unordered_map>
-	#include <memory>
+#if __cplusplus >= 201103L || defined(_MSC_VER)
+#include <unordered_map>
+#include <memory>
 #else
-	#include <tr1/unordered_map>
-	using std::tr1::unordered_map;
+#include <tr1/unordered_map>
+using std::tr1::unordered_map;
 #endif
 
-#define OFXREMOTEUI_PORT									10000
-#define OFXREMOTEUI_BROADCAST_PORT							25748
-#define OFXREMOTEUI_BORADCAST_INTERVAL						1 /*secs*/
-#define OFXREMOTEUI_NEIGHBOR_DEATH_BY_TIME					1.1 /*sec*/
+#define OFXREMOTEUI_PORT 10000
+#define OFXREMOTEUI_BROADCAST_PORT 25748
+#define OFXREMOTEUI_BORADCAST_INTERVAL 1			 /*secs*/
+#define OFXREMOTEUI_NEIGHBOR_DEATH_BY_TIME 1.1 /*sec*/
 
-#define OFXREMOTEUI_LATENCY_TEST_RATE						0.3333
-#define OFXREMOTEUI_DISCONNECTION_STRIKES					6
-#define OFXREMOTEUI_CONNECTION_TIMEOUT						OFXREMOTEUI_LATENCY_TEST_RATE * OFXREMOTEUI_DISCONNECTION_STRIKES
-#define OFXREMOTEUI_SETTINGS_FILENAME						"ofxRemoteUISettings.xml"
-#define OFXREMOTEUI_SETTINGS_BACKUP_FOLDER					"ofxRemoteUISettings Backups"
-#define OFXREMOTEUI_NUM_BACKUPS								20
-#define OFXREMOTEUI_XML_FORMAT_VER							"2"
-#define OFXREMOTEUI_XML_ROOT_TAG							"OFX_REMOTE_UI"
-#define OFXREMOTEUI_XML_TAG									"OFX_REMOTE_UI_PARAMS"
-#define OFXREMOTEUI_XML_PORT_TAG							"OFX_REMOTE_UI_SERVER_PORT"
-#define OFXREMOTEUI_XML_ENABLED_TAG							"OFX_REMOTE_UI_SERVER_ENABLED"
-#define OFXREMOTEUI_DEFAULT_PARAM_GROUP						"defaultGroup"
-#define OFXREMOTEUI_PRESET_DIR								"ofxRemoteUIPresets"
-#define OFXREMOTEUI_NO_PRESETS								"NO_PRESETS"
-#define OFXREMOTEUI_XML_V_TAG								"OFX_REMOTE_UI_V"
+#define OFXREMOTEUI_LATENCY_TEST_RATE 0.3333
+#define OFXREMOTEUI_DISCONNECTION_STRIKES 6
+#define OFXREMOTEUI_CONNECTION_TIMEOUT OFXREMOTEUI_LATENCY_TEST_RATE *OFXREMOTEUI_DISCONNECTION_STRIKES
+#define OFXREMOTEUI_SETTINGS_FILENAME "ofxRemoteUISettings.xml"
+#define OFXREMOTEUI_SETTINGS_BACKUP_FOLDER "ofxRemoteUISettings Backups"
+#define OFXREMOTEUI_NUM_BACKUPS 20
+#define OFXREMOTEUI_XML_FORMAT_VER "2"
+#define OFXREMOTEUI_XML_ROOT_TAG "OFX_REMOTE_UI"
+#define OFXREMOTEUI_XML_TAG "OFX_REMOTE_UI_PARAMS"
+#define OFXREMOTEUI_XML_PORT_TAG "OFX_REMOTE_UI_SERVER_PORT"
+#define OFXREMOTEUI_XML_ENABLED_TAG "OFX_REMOTE_UI_SERVER_ENABLED"
+#define OFXREMOTEUI_DEFAULT_PARAM_GROUP "defaultGroup"
+#define OFXREMOTEUI_PRESET_DIR "ofxRemoteUIPresets"
+#define OFXREMOTEUI_NO_PRESETS "NO_PRESETS"
+#define OFXREMOTEUI_XML_V_TAG "OFX_REMOTE_UI_V"
 
-#define OFXREMOTEUI_COLOR_PARAM_XML_TAG						"REMOTEUI_PARAM_COLOR"
-#define OFXREMOTEUI_INT_PARAM_XML_TAG						"REMOTEUI_PARAM_INT"
-#define OFXREMOTEUI_FLOAT_PARAM_XML_TAG						"REMOTEUI_PARAM_FLOAT"
-#define	OFXREMOTEUI_BOOL_PARAM_XML_TAG						"REMOTEUI_PARAM_BOOL"
-#define OFXREMOTEUI_STRING_PARAM_XML_TAG					"REMOTEUI_PARAM_STRING"
-#define OFXREMOTEUI_ENUM_PARAM_XML_TAG						"REMOTEUI_PARAM_ENUM"
+#define OFXREMOTEUI_COLOR_PARAM_XML_TAG "REMOTEUI_PARAM_COLOR"
+#define OFXREMOTEUI_INT_PARAM_XML_TAG "REMOTEUI_PARAM_INT"
+#define OFXREMOTEUI_FLOAT_PARAM_XML_TAG "REMOTEUI_PARAM_FLOAT"
+#define OFXREMOTEUI_BOOL_PARAM_XML_TAG "REMOTEUI_PARAM_BOOL"
+#define OFXREMOTEUI_STRING_PARAM_XML_TAG "REMOTEUI_PARAM_STRING"
+#define OFXREMOTEUI_ENUM_PARAM_XML_TAG "REMOTEUI_PARAM_ENUM"
 
-#define OFXREMOTEUI_PARAM_NAME_XML_KEY						"paramName"
-#define OFXREMOTEUI_UNKNOWN_PARAM_NAME_XML_KEY				"unnamedParamName"
+#define OFXREMOTEUI_PARAM_NAME_XML_KEY "paramName"
+#define OFXREMOTEUI_UNKNOWN_PARAM_NAME_XML_KEY "unnamedParamName"
 
 #include "RemoteParam.h"
 
@@ -206,27 +208,26 @@ using namespace std;
 
  */
 
-const char *get_filename_ext(const char *filename) ;
+const char *get_filename_ext(const char *filename);
 
 #ifdef _WINDOWS
-void GetHostName(std::string& host_name);
+void GetHostName(std::string &host_name);
 #endif
 
-class ofxRemoteUI{
+class ofxRemoteUI {
 
 public:
-
 	vector<string> getAllParamNamesList();
-	vector<string> getChangedParamsList(); //in user add order
+	vector<string> getChangedParamsList(); // in user add order
 	RemoteUIParam getParamForName(string paramName);
-	RemoteUIParam& getParamRefForName(string paramName); //careful with this!
+	RemoteUIParam &getParamRefForName(string paramName); // careful with this!
 	bool paramExistsForName(string paramName);
 	vector<string> getPresetsList();
 
 	string getValuesAsString();
-	void setValuesFromString( string values );
+	void setValuesFromString(string values);
 
-	virtual void restoreAllParamsToInitialXML() = 0;	//call this on client to request server to do so
+	virtual void restoreAllParamsToInitialXML() = 0; // call this on client to request server to do so
 	virtual void restoreAllParamsToDefaultValues() = 0;
 
 	bool ready();
@@ -235,30 +236,29 @@ public:
 
 	virtual void sendUntrackedParamUpdate(RemoteUIParam p, string paramName){};
 
-	string getMyIP(string userChosenInteface, string & subnetMask);
+	string getMyIP(string userChosenInteface, string &subnetMask);
 
 protected:
-
 	virtual void update(float dt) = 0;
 	void sendParam(string paramName, RemoteUIParam p);
 	DecodedMessage decode(ofxOscMessage m);
 
-	vector<string> scanForUpdatedParamsAndSync();	//goes through all params, comparing * to real valie
-													//reports those that are out of syn
+	vector<string> scanForUpdatedParamsAndSync(); // goes through all params, comparing * to real valie
+	// reports those that are out of syn
 
-	void sendUpdateForParamsInList(vector<string>paramsPendingUpdate);
+	void sendUpdateForParamsInList(vector<string> paramsPendingUpdate);
 	bool hasParamChanged(RemoteUIParam p);
 
 	void updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage dm);
 	void syncAllParamsToPointers();
 	void syncAllPointersToParams();
-	void syncParamToPointer(string paramName); //copies the param0s pointer value over the value
-	void syncPointerToParam(string paramName); //the other way around
+	void syncParamToPointer(string paramName); // copies the param0s pointer value over the value
+	void syncPointerToParam(string paramName); // the other way around
 	void addParamToDB(RemoteUIParam p, string paramName);
 
 	void clearOscReceiverMsgQueue();
 
-	void sendREQU(bool confirm = false); //a request for a complete list of server params
+	void sendREQU(bool confirm = false); // a request for a complete list of server params
 	void sendHELLO();
 	void sendCIAO();
 	void sendTEST();
@@ -266,50 +266,47 @@ protected:
 	void sendSAVP(string presetName, bool confirm = false);
 	void sendSETP(string presetName, bool confirm = false);
 	void sendDELP(string presetName, bool confirm = false);
-	void sendRESX(bool confirm = false); //send a "restore fom first loaded XML" msg
-	void sendRESD(bool confirm = false); //send a "restore fom code defaults" msg
+	void sendRESX(bool confirm = false); // send a "restore fom first loaded XML" msg
+	void sendRESD(bool confirm = false); // send a "restore fom code defaults" msg
 	void sendSAVE(bool confirm = false);
 	void sendMISP(vector<string> missingParamsInPreset);
 
-	//group preset methods (note lowercase p, l)
+	// group preset methods (note lowercase p, l)
 	void sendSAVp(string presetName, string group, bool confirm = false);
 	void sendSETp(string presetName, string group, bool confirm = false);
 	void sendDELp(string presetName, string group, bool confirm = false);
 
 	void printAllParamsDebug();
 
-	bool							verbose_;
-	bool							readyToSend;
-	ofxOscSender			oscSender;
-	ofxOscReceiver		oscReceiver;
+	bool verbose_;
+	bool readyToSend;
+	ofxOscSender oscSender;
+	ofxOscReceiver oscReceiver;
 
+	float timeCounter;
+	float timeSinceLastReply;
+	float avgTimeSinceLastReply;
+	bool waitingForReply;
+	int disconnectStrikes;
 
-	float							timeCounter;
-	float							timeSinceLastReply;
-	float							avgTimeSinceLastReply;
-	bool							waitingForReply;
-	int								disconnectStrikes;
+	float updateInterval;
+	int port;
 
-	float							updateInterval;
-	int								port;
+	string userSuppliedNetInterface; // store user preference on network interface to use
 
-	string							userSuppliedNetInterface; //store user preference on network interface to use
+	unordered_map<string, RemoteUIParam> params;
+	map<int, string> orderedKeys; // used to keep the order in which the params were added
+	vector<string> presetNames;
 
-	unordered_map<string, RemoteUIParam>		params;
-	map<int, string>							orderedKeys; // used to keep the order in which the params were added
-	vector<string>								presetNames;
+	vector<string> paramsChangedSinceLastCheck;
 
-	vector<string>								paramsChangedSinceLastCheck;
-
-	unordered_map<string, RemoteUIParam>		paramsFromCode; //this will hold a copy of all the params as they where when shared first
-	unordered_map<string, RemoteUIParam>		paramsFromXML; //this will hold a copy of all the params as they where when first loaded from XML
-	unordered_map<string, bool>					paramsLoadedFromXML;
+	unordered_map<string, RemoteUIParam> paramsFromCode; // this will hold a copy of all the params as they where when shared first
+	unordered_map<string, RemoteUIParam> paramsFromXML; // this will hold a copy of all the params as they where when first loaded from XML
+	unordered_map<string, bool> paramsLoadedFromXML;
 
 private:
-
 	string stringForParamType(RemoteUIParamType t);
 	RemoteUIParam nullParam;
-
 };
 
 void split(vector<string> &tokens, const string &text, char separator);

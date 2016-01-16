@@ -1,7 +1,7 @@
 #include "ofStolenUtils.h"
 #include <string.h>
 
-int ofToInt(const std::string& intString) {
+int ofToInt(const std::string &intString) {
 	int x = 0;
 	std::istringstream cur(intString);
 	cur >> x;
@@ -9,7 +9,7 @@ int ofToInt(const std::string& intString) {
 }
 
 //----------------------------------------
-float ofToFloat(const std::string& floatString) {
+float ofToFloat(const std::string &floatString) {
 	float x = 0;
 	std::istringstream cur(floatString);
 	cur >> x;

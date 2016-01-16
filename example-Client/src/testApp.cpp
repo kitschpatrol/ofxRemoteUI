@@ -1,8 +1,8 @@
 #include "testApp.h"
 
-//get notified when server tells us something
-void clientCallback(RemoteUIClientCallBackArg a){
-
+// get notified when server tells us something
+void clientCallback(RemoteUIClientCallBackArg a) {
+	// clang-format off
 	switch (a.action) {
 		case SERVER_CONNECTED: cout << "SERVER_CONNECTED" << endl; break;
 		case SERVER_DISCONNECTED: cout << "SERVER_DISCONNECTED" << endl; break;
@@ -17,22 +17,22 @@ void clientCallback(RemoteUIClientCallBackArg a){
 		case NEIGHBORS_UPDATED: cout << "NEIGHBORS_UPDATED" << endl; break;
 		default: break;
 	}
+	// clang-format on
 }
 
-
-void testApp::setup(){
+void testApp::setup() {
 
 	ofBackground(22);
 	ofSetFrameRate(60);
 	ofSetVerticalSync(true);
 
-	//start client
+	// start client
 	client.setVerbose(true);
 	client.setCallback(clientCallback);
-	client.setup("127.0.0.1", 10000/*port*/);
+	client.setup("127.0.0.1", 10000 /*port*/);
 	client.connect();
 
-	//we want the client to have acces to those values all the time, so we feed him their @
+	// we want the client to have acces to those values all the time, so we feed him their @
 	client.trackParam("drawOutlines", &drawOutlines);
 	client.trackParam("x", &x);
 	client.trackParam("y", &y);
@@ -40,70 +40,60 @@ void testApp::setup(){
 	time = 0.0f;
 }
 
-
-void testApp::update(){
+void testApp::update() {
 
 	float dt = 0.016666;
 	time += dt;
 	client.update(dt);
 	client.updateAutoDiscovery(dt);
 
-	if(time > 0.2f){
+	if (time > 0.2f) {
 		time = 0.0f;
-		//request a param update to the server every 1/5th of a sec
-		//in case your app updates params on its own
-		//client.requestCompleteUpdate();
+		// request a param update to the server every 1/5th of a sec
+		// in case your app updates params on its own
+		// client.requestCompleteUpdate();
 	}
 
 	x = mouseX;
 	y = mouseY;
-	//now control some params from the client app
-	//send an update to the server app
+	// now control some params from the client app
+	// send an update to the server app
 }
 
+void testApp::draw() {
 
-void testApp::draw(){
-
-	ofDrawBitmapStringHighlight(
-								string("CLIENT\n") +
-								"x: " + ofToString(x) + "\n" +
-								"y: " + ofToString(y) + "\n" +
-								"drawOutlines: " + ofToString(drawOutlines) + "\n" +
-								"currentSentence: " + currentSentence ,
-								20, 20,
-								ofColor::black, ofColor::red
-								);
+	ofDrawBitmapStringHighlight(string("CLIENT\n") + "x: " + ofToString(x) + "\n" + "y: " + ofToString(y) + "\n" + "drawOutlines: " + ofToString(drawOutlines) +
+																	"\n" + "currentSentence: " + currentSentence,
+															20, 20, ofColor::black, ofColor::red);
 
 	ofDrawBitmapStringHighlight("press SPACEBAR to send param updates", 20, ofGetHeight() - 15);
 }
 
-
-void testApp::mousePressed( int x, int y, int button ){
+void testApp::mousePressed(int x, int y, int button) {
 	drawOutlines = !drawOutlines;
 }
 
+void testApp::keyPressed(int key) {
 
-void testApp::keyPressed(int key){
-
-	if(key=='1'){
+	if (key == '1') {
 		client.savePresetWithName("a");
 	}
-	if(key=='2'){
+	if (key == '2') {
 		client.setPreset("a");
-	} 
-	if(key=='3'){
+	}
+	if (key == '3') {
 		client.deletePreset("a");
 	}
 
-	if(key=='4'){
+	if (key == '4') {
 		vector<string> params = client.getPresetsList();
 		cout << "presets list" << endl;
- 		for(int i = 0; i < params.size(); i++){
+		for (int i = 0; i < params.size(); i++) {
 			cout << params[i] << endl;
 		}
 	}
 
-	if(key==' '){
+	if (key == ' ') {
 		client.sendTrackedParamUpdate("x");
 		client.sendTrackedParamUpdate("y");
 		client.sendTrackedParamUpdate("drawOutlines");

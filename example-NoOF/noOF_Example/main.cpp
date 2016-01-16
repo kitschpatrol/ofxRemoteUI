@@ -6,9 +6,9 @@
 //  Copyright (c) 2013 Oriol Ferrer Mesià. All rights reserved.
 //
 
-#include <iostream>
 #include "ofxRemoteUIServer.h"
 #include "unistd.h"
+#include <iostream>
 
 /////////////////////////////////////////////////////////////////////////////////////
 // my app's paramaters defined here
@@ -17,16 +17,15 @@
 int myParam = 0;
 bool quitButton = false;
 string myString = "Test String";
-ofColor color;	//RGBA as uchars
-				//access to components: color.r, color.g, color.b, color.a [0..255]
-				//also access by color[0] (red), color[1] (green), etc
-
+ofColor color; // RGBA as uchars
+// access to components: color.r, color.g, color.b, color.a [0..255]
+// also access by color[0] (red), color[1] (green), etc
 
 /////////////////////////////////////////////////////////////////////////////////////
-//define a callback method to get notifications of client actions
+// define a callback method to get notifications of client actions
 /////////////////////////////////////////////////////////////////////////////////////
 
-void serverCallback(RemoteUIServerCallBackArg arg){
+void serverCallback(RemoteUIServerCallBackArg arg) {
 
 	switch (arg.action) {
 
@@ -39,7 +38,7 @@ void serverCallback(RemoteUIServerCallBackArg arg){
 			break;
 
 		case CLIENT_UPDATED_PARAM:
-			cout << "CLIENT_UPDATED_PARAM "<< arg.paramName << ": ";
+			cout << "CLIENT_UPDATED_PARAM " << arg.paramName << ": ";
 			arg.param.print();
 			break;
 
@@ -50,36 +49,33 @@ void serverCallback(RemoteUIServerCallBackArg arg){
 	}
 }
 
-
-int main(int argc, const char * argv[]){
+int main(int argc, const char *argv[]) {
 
 	std::cout << "Hello, World!\n";
 
-	//setup our client callback, to get notified when client changes things
+	// setup our client callback, to get notified when client changes things
 	RUI_SET_CALLBACK(serverCallback);
 
-	//start the server
+	// start the server
 	RUI_SETUP();
 
-	//chose a new random color for all the upcoming variables
+	// chose a new random color for all the upcoming variables
 	RUI_NEW_COLOR();
 	// share my float param, give a valid range [0..100]
 	RUI_SHARE_PARAM(myParam, 0, 100);
 
+	RUI_NEW_COLOR();
+	RUI_SHARE_COLOR_PARAM(color); // share color param
 
 	RUI_NEW_COLOR();
-	RUI_SHARE_COLOR_PARAM(color); //share color param
+	RUI_SHARE_PARAM(myString); // share string param
 
 	RUI_NEW_COLOR();
-	RUI_SHARE_PARAM(myString); //share string param
+	RUI_SHARE_PARAM(quitButton); // finally share bool param, used as a "quit now" flag
 
-	RUI_NEW_COLOR();
-	RUI_SHARE_PARAM(quitButton); //finally share bool param, used as a "quit now" flag
+	RUI_LOAD_FROM_XML(); // load param states from XML
 
-
-	RUI_LOAD_FROM_XML();	//load param states from XML
-
-	//stay here until user presses quit button
+	// stay here until user presses quit button
 	while (quitButton == false) {
 		RUI_UPDATE(0.01666);
 		usleep(100000 / 6.);
@@ -87,12 +83,12 @@ int main(int argc, const char * argv[]){
 
 	quitButton = false;
 
-	//save current state of params to XML
+	// save current state of params to XML
 	RUI_SAVE_TO_XML();
 
-	//close server, notify client about the closure
+	// close server, notify client about the closure
 	RUI_CLOSE();
 
-	//end program
-    return 0;
+	// end program
+	return 0;
 }

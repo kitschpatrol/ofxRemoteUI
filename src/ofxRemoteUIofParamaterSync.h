@@ -17,46 +17,41 @@
 #include "ofxRemoteUIServer.h"
 #include "ofxRemoteUIVars.h"
 
-class ofxRemoteUIofParamaterSync{
+class ofxRemoteUIofParamaterSync {
 
 public:
-
-	void setup(ofParameterGroup & group);
+	void setup(ofParameterGroup &group);
 
 	void forceRuiToOfParamSync();
 
 protected:
+	ofParameterGroup *syncGroup;
 
-	ofParameterGroup * syncGroup;
+	void remoteUIClientDidSomething(RemoteUIServerCallBackArg &arg);
+	void parameterChanged(ofAbstractParameter &parameter);
 
-	void remoteUIClientDidSomething(RemoteUIServerCallBackArg & arg);
-	void parameterChanged( ofAbstractParameter & parameter );
+	void recursiveSetup(ofParameterGroup &group);
 
-	void recursiveSetup(ofParameterGroup & group);
+	const string SEP = "."; // to separate ofParameter group hierarcy
+	const string compSEP = "_"; // for ofVec _2x, _2y, etc
 
-	const string SEP = "."; //to separate ofParameter group hierarcy
-	const string compSEP = "_"; //for ofVec _2x, _2y, etc
+	ofAbstractParameter &findInChildren(ofParameterGroup &group, vector<string> &groupPathName, const string &paramNane);
 
-	ofAbstractParameter& findInChildren(ofParameterGroup & group,
-										vector<string>& groupPathName,
-										const string& paramNane);
-
-	map<string, string> groupClusterID; //full param group path to shortVersion.
+	map<string, string> groupClusterID; // full param group path to shortVersion.
 	map<string, int> uniqueWords;
-	vector<string>	ofParamRuiList;
+	vector<string> ofParamRuiList;
 
 	void updateOfParamFromRuiParam(string ruiParamName);
-	string getShortVersionForGroupPath(const string & groupPath);
-	string getFullGroupPathForShortVersion(const string & shortV);
+	string getShortVersionForGroupPath(const string &groupPath);
+	string getFullGroupPathForShortVersion(const string &shortV);
 
 	string cleanParamName(string p);
 
-	string goUpOneLevel(const string & path);
-	string getFileName(const string & path);
+	string goUpOneLevel(const string &path);
+	string getFileName(const string &path);
 
-	string getCompleteParameterPath(ofAbstractParameter & parameter);
+	string getCompleteParameterPath(ofAbstractParameter &parameter);
 };
 
 #endif
 #endif /* defined(__oscParametersReceiver__ofxRemoteUIofParamaterSync__) */
-
