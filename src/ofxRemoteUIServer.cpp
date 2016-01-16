@@ -257,14 +257,12 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 
 			if (t.isUsingGetterSetter()) {
 				v = t.floatGetter();
-			}
-			else if (t.floatValAddr) {
+			} else if (t.floatValAddr) {
 				v = *t.floatValAddr;
-			}
-			else {
+			} else {
 				v = t.floatVal;
 			}
-			
+
 			if (verbose_)
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			s.setValue(OFXREMOTEUI_FLOAT_PARAM_XML_TAG, (double)v, c.numFloats);
@@ -303,16 +301,27 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 		} break;
 		case REMOTEUI_PARAM_ENUM: {
 			int v = t.intValAddr ? *t.intValAddr : t.intVal;
-			if (verbose_)
+			if (verbose_) {
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
+			}
 			s.setValue(OFXREMOTEUI_ENUM_PARAM_XML_TAG, v, c.numEnums);
 			s.setAttribute(OFXREMOTEUI_ENUM_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, key, c.numEnums);
 			c.numEnums++;
 		} break;
-		case REMOTEUI_PARAM_BOOL: {
-			bool v = t.boolValAddr ? *t.boolValAddr : t.boolVal;
-			if (verbose_)
+		case REMOTEUI_PARAM_BOOL: { // GSBDONE
+			bool v;
+
+			if (t.isUsingGetterSetter()) {
+				v = t.boolGetter();
+			} else if (t.boolValAddr) {
+				v = *t.boolValAddr;
+			} else {
+				v = t.boolVal;
+			}
+
+			if (verbose_) {
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
+			}
 			s.setValue(OFXREMOTEUI_BOOL_PARAM_XML_TAG, (bool)v, c.numBools);
 			s.setAttribute(OFXREMOTEUI_BOOL_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, key, c.numBools);
 			c.numBools++;
@@ -327,8 +336,9 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 		} break;
 
 		case REMOTEUI_PARAM_SPACER:
-			if (verbose_)
+			if (verbose_) {
 				RLOG_NOTICE << "skipping save of spacer '" << key << "' to XML";
+			}
 			break;
 
 		default:
@@ -344,12 +354,12 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 
 		case REMOTEUI_PARAM_FLOAT: { // GSDONE
 			float v;
-			
-			if (floatValAddress) {
-				v = *t.floatValAddr;
-			}
-			else if (t.isUsingGetterSetter() {
+
+			if (t.isUsingGetterSetter() {
 				v = t.floatGetter();
+			}
+			else if (floatValAddress) {
+				v = *t.floatValAddr;
 			}
 			else {
 				v = t.floatVal;
@@ -400,8 +410,17 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 			s.setTo(path);
 			s.setAttribute("type", "enum");
 		} break;
-		case REMOTEUI_PARAM_BOOL: {
-			bool v = t.boolValAddr ? *t.boolValAddr : t.boolVal;
+		case REMOTEUI_PARAM_BOOL: { // GSBDONE
+			bool v;
+
+			if (t.isUsingGetterSetter()) {
+				v = t.boolGetter();
+			} else if (boolValAddress) {
+				v = *t.boolValAddr;
+			} else {
+				v = t.boolVal;
+			}
+
 			if (verbose_)
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			s.addValue("P", v);
@@ -637,14 +656,12 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 								break;
 							}
 							float val = ofClamp(s.getFloatValue(), p.minFloat, p.maxFloat);
-							
+
 							if (p.isUsingGetterSetter()) {
-								p.floatVal = p.floatGetter(0);
-							}
-							else if (p.floatValAddr) {
+								p.floatVal = p.floatGetter();
+							} else if (p.floatValAddr) {
 								p.floatVal = *p.floatValAddr
-							}
-							else {
+							} else {
 								p.floatVal = val;
 							}
 							if (verbose_)
@@ -702,15 +719,22 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 
 					case 'b': { // bool
 						if (!isAParamWeKnowOf) {
-							p.type = REMOTEUI_PARAM_BOOL;
+							p.type = REMOTEUI_PARAM_BOOL; // GSBDONE
 							p.boolVal = s.getIntValue();
 						} else {
-							if (p.type != REMOTEUI_PARAM_BOOL) {
+							if (p.type != REMOTEUI_PARAM_BOOL) { // GSBDONE
 								RLOG_ERROR << "type missmatch parsing '" << paramName << "'. Ignoring it!";
 								break;
 							}
 							bool val = s.getIntValue();
-							p.boolVal = *p.boolValAddr = val;
+
+							if (p.isUsingGetterSetter()) {
+								p.boolVal = p.boolGetter();
+							} else if (p.boolValAddr) {
+								p.boolVal = *p.boolValAddr
+							} else {
+								p.boolVal = val;
+							}
 							if (verbose_)
 								RLOG_NOTICE << "loading a BOOL '" << paramName << "' (" << (bool)*p.boolValAddr << ") from XML";
 						}
@@ -1257,7 +1281,7 @@ bool ofxRemoteUIServer::_keyPressed(ofKeyEventArgs &e) {
 								p.intVal += sign;
 								p.intVal = ofClamp(p.intVal, p.minInt, p.maxInt);
 								break;
-							case REMOTEUI_PARAM_BOOL:
+							case REMOTEUI_PARAM_BOOL: // GSDONE
 								p.boolVal = !p.boolVal;
 								break;
 							case REMOTEUI_PARAM_COLOR:
@@ -1589,7 +1613,7 @@ void ofxRemoteUIServer::draw(int x, int y) {
 					case REMOTEUI_PARAM_INT:
 						drawString(ofToString(p.intVal), x + valOffset, y);
 						break;
-					case REMOTEUI_PARAM_BOOL:
+					case REMOTEUI_PARAM_BOOL: // GSDONE
 						drawString(p.boolVal ? "true" : "false", x + valOffset, y);
 						break;
 					case REMOTEUI_PARAM_STRING:
@@ -2246,7 +2270,7 @@ void ofxRemoteUIServer::shareParam(string paramName, float *param, float min, fl
 
 void ofxRemoteUIServer::shareParam(string paramName, bool *param, ofColor c, int nothingUseful) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_BOOL;
+	p.type = REMOTEUI_PARAM_BOOL; // GSDONE
 	p.boolValAddr = param;
 	p.boolVal = *param;
 	p.group = upcomingGroup;
@@ -2254,6 +2278,21 @@ void ofxRemoteUIServer::shareParam(string paramName, bool *param, ofColor c, int
 	addParamToDB(p, paramName);
 	if (verbose_)
 		RLOG_NOTICE << "Sharing Bool Param '" << paramName << "'";
+}
+
+// New, param getters and setters (See GSBDONE comments elsewhere...)
+void ofxRemoteUIServer::shareParam(string paramName, std::function<bool()> getter, std::function<void(bool)> setter, ofColor c) {
+	RemoteUIParam p;
+	p.type = REMOTEUI_PARAM_BOOL; // GSBDONE
+	p.boolValAddr = nullptr;
+	p.boolVal = getter();
+	p.boolGetter = getter;
+	p.boolSetter = setter;
+	p.group = upcomingGroup;
+	setColorForParam(p, c);
+	addParamToDB(p, paramName);
+	if (verbose_)
+		RLOG_NOTICE << "Sharing Getter / Setter Bool Param '" << paramName << "'";
 }
 
 void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int max, ofColor c) {

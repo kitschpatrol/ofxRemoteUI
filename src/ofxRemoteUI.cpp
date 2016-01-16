@@ -333,11 +333,10 @@ void ofxRemoteUI::updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage 
 				p.maxFloat = m.getArgAsFloat(arg);
 				arg++;
 			}
-			
+
 			if (p.isUsingGetterSetter()) {
 				p.floatSetter(p.floatVal);
-			}
-			else if (p.floatValAddr) {
+			} else if (p.floatValAddr) {
 				*p.floatValAddr = p.floatVal;
 			}
 			break;
@@ -394,10 +393,13 @@ void ofxRemoteUI::updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage 
 		} break;
 
 		case BOL_ARG:
-			p.type = REMOTEUI_PARAM_BOOL;
+			p.type = REMOTEUI_PARAM_BOOL; // GSBDONE
 			p.boolVal = m.getArgAsInt32(arg) == 0 ? false : true;
 			arg++;
-			if (p.boolValAddr) {
+
+			if (p.isUsingGetterSetter()) {
+				p.boolSetter(p.boolVal);
+			} else if (p.boolValAddr) {
 				*p.boolValAddr = p.boolVal;
 			}
 			break;
@@ -514,8 +516,7 @@ void ofxRemoteUI::syncPointerToParam(string paramName) {
 		case REMOTEUI_PARAM_FLOAT: // GSDONE
 			if (p.isUsingGetterSetter()) {
 				p.floatSetter(p.floatVal);
-			}
-			else if (p.floatValAddr) {
+			} else if (p.floatValAddr) {
 				*p.floatValAddr = p.floatVal;
 			}
 			break;
@@ -536,8 +537,10 @@ void ofxRemoteUI::syncPointerToParam(string paramName) {
 			}
 			break;
 
-		case REMOTEUI_PARAM_BOOL:
-			if (p.boolValAddr) {
+		case REMOTEUI_PARAM_BOOL: // GSBDONE
+			if (p.isUsingGetterSetter()) {
+				p.boolSetter(p.boolVal);
+			} else if (p.boolValAddr) {
 				*p.boolValAddr = p.boolVal;
 			}
 			break;
@@ -563,8 +566,7 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 		case REMOTEUI_PARAM_FLOAT: // GSDONE
 			if (p.isUsingGetterSetter()) {
 				p.floatVal = p.floatGetter();
-			}
-			else if (p.floatValAddr) {
+			} else if (p.floatValAddr) {
 				p.floatVal = *p.floatValAddr;
 			}
 			break;
@@ -585,8 +587,10 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 			}
 			break;
 
-		case REMOTEUI_PARAM_BOOL:
-			if (p.boolValAddr) {
+		case REMOTEUI_PARAM_BOOL: // GSBDONE
+			if (p.isUsingGetterSetter()) {
+				p.boolVal = p.boolGetter();
+			} else if (p.boolValAddr) {
 				p.boolVal = *p.boolValAddr;
 			}
 			break;
@@ -627,8 +631,10 @@ bool ofxRemoteUI::hasParamChanged(RemoteUIParam p) {
 			}
 			return false;
 
-		case REMOTEUI_PARAM_BOOL:
-			if (p.boolValAddr) {
+		case REMOTEUI_PARAM_BOOL: // GSBDONE
+			if (p.isUsingGetterSetter()) {
+				return (p.boolVal != p.boolGetter());
+			} else if (p.boolValAddr) {
 				return (*p.boolValAddr != p.boolVal);
 			}
 			return false;
@@ -657,7 +663,7 @@ string ofxRemoteUI::stringForParamType(RemoteUIParamType t) {
 			return "COL";
 		case REMOTEUI_PARAM_ENUM:
 			return "ENU";
-		case REMOTEUI_PARAM_BOOL:
+		case REMOTEUI_PARAM_BOOL: // GSBDONE
 			return "BOL";
 		case REMOTEUI_PARAM_STRING:
 			return "STR";
@@ -718,7 +724,7 @@ string ofxRemoteUI::getValuesAsString() {
 			case REMOTEUI_PARAM_ENUM:
 				out << param.intVal << endl;
 				break;
-			case REMOTEUI_PARAM_BOOL:
+			case REMOTEUI_PARAM_BOOL: // GSBDONE
 				out << (param.boolVal ? "1" : "0") << endl;
 				break;
 			case REMOTEUI_PARAM_STRING:
@@ -772,7 +778,7 @@ void ofxRemoteUI::setValuesFromString(string values) {
 				case REMOTEUI_PARAM_ENUM:
 					valstr >> param.intVal;
 					break;
-				case REMOTEUI_PARAM_BOOL:
+				case REMOTEUI_PARAM_BOOL: // GSBDONE
 					valstr >> param.boolVal;
 					break;
 				case REMOTEUI_PARAM_STRING:
@@ -825,8 +831,8 @@ void ofxRemoteUI::sendParam(string paramName, RemoteUIParam p) {
 			m.addIntArg(p.blueVal);
 			m.addIntArg(p.alphaVal);
 			break;
-		case REMOTEUI_PARAM_BOOL:
-			m.addIntArg(p.boolVal ? 1 : 0);
+		case REMOTEUI_PARAM_BOOL:					// GSBDONE
+			m.addIntArg(p.boolVal ? 1 : 0); // GSBDONE
 			break;
 		case REMOTEUI_PARAM_STRING:
 			m.addStringArg(p.stringVal);

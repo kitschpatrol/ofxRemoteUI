@@ -15,6 +15,35 @@
 #include "cinder/app/App.h"
 #endif
 
+// Logging Wrappers
+#ifdef OF_AVAILABLE
+#define RLOG_NOTICE (ofLogNotice("ofxRemoteUI"))
+#define RLOG_ERROR (ofLogError("ofxRemoteUI"))
+#define RLOG_WARNING (ofLogWarning("ofxRemoteUI"))
+#define RLOG_VERBOSE (ofLogVerbose("ofxRemoteUI"))
+#elif defined(CINDER_AVAILABLE)
+// First, re-wrap cinder logging macros to take stream input
+#define CI_STREAM_LOG_V (::cinder::log::Entry(ci::log::LEVEL_VERBOSE, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
+#define CI_STREAM_LOG_D (::cinder::log::Entry(ci::log::LEVEL_DEBUG, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
+#define CI_STREAM_LOG_I (::cinder::log::Entry(ci::log::LEVEL_INFO, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
+#define CI_STREAM_LOG_W (::cinder::log::Entry(ci::log::LEVEL_WARNING, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
+#define CI_STREAM_LOG_E (::cinder::log::Entry(ci::log::LEVEL_ERROR, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
+#define CI_STREAM_LOG_F (::cinder::log::Entry(ci::log::LEVEL_FATAL, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
+
+#define RLOG_NOTICE (CI_STREAM_LOG_I)
+#define RLOG_ERROR (CI_STREAM_LOG_E)
+#define RLOG_WARNING (CI_STREAM_LOG_W)
+#define RLOG_VERBOSE (CI_STREAM_LOG_V)
+#else
+// TODO!
+#define RLOG_NOTICE (cout << endl)
+#define RLOG_ERROR (cout << endl)
+#define RLOG_WARNING (cout << endl)
+#define RLOG_VERBOSE (cout << endl)
+#endif
+
+#endif // emptyExample_RemoteParam_h
+
 using namespace std;
 
 #include <sstream>
@@ -167,7 +196,25 @@ public:
 	};
 
 	bool isUsingGetterSetter() const {
-		return (floatGetter != nullptr) && (floatSetter != nullptr);
+		switch (type) {
+			case REMOTEUI_PARAM_FLOAT: // GSFDONE
+				return (floatGetter != nullptr) && (floatSetter != nullptr);
+				break;
+			case REMOTEUI_PARAM_BOOL: // GSBDONE
+				return (boolGetter != nullptr) && (boolSetter != nullptr);
+				break;
+			case REMOTEUI_PARAM_ENUM:
+			case REMOTEUI_PARAM_INT:
+			case REMOTEUI_PARAM_STRING:
+			case REMOTEUI_PARAM_COLOR:
+			case REMOTEUI_PARAM_SPACER:
+				return false;
+				break;
+			default:
+				RLOG_ERROR << "weird RemoteUIParam " << type << " at isEqualTo() !";
+				return false;
+				break;
+		}
 	}
 
 	bool isEqualTo(RemoteUIParam &p) {
@@ -190,7 +237,7 @@ public:
 				if (p.maxInt != maxInt)
 					equal = false;
 				break;
-			case REMOTEUI_PARAM_BOOL:
+			case REMOTEUI_PARAM_BOOL: // GSDONE
 				if (p.boolVal != boolVal)
 					equal = false;
 				break;
@@ -206,7 +253,8 @@ public:
 				equal = false;
 				break;
 			default:
-				printf("weird RemoteUIParam at isEqualTo()!\n");
+				RLOG_ERROR << "weird RemoteUIParam " << type << " at isEqualTo() !";
+				equal = false;
 				break;
 		}
 		return equal;
@@ -228,7 +276,7 @@ public:
 			case REMOTEUI_PARAM_INT:
 				ss << intVal;
 				return ss.str();
-			case REMOTEUI_PARAM_BOOL:
+			case REMOTEUI_PARAM_BOOL: // GSDONE
 				return boolVal ? "TRUE" : "FALSE";
 			case REMOTEUI_PARAM_STRING:
 				return stringVal;
@@ -250,8 +298,7 @@ public:
 			case REMOTEUI_PARAM_FLOAT: // GSDONE
 				if (isUsingGetterSetter()) {
 					ss << floatGetter();
-				}
-				else {
+				} else {
 					ss << *floatValAddr;
 				}
 				return ss.str();
@@ -266,8 +313,15 @@ public:
 			case REMOTEUI_PARAM_INT:
 				ss << *intValAddr;
 				return ss.str();
-			case REMOTEUI_PARAM_BOOL:
-				return *boolValAddr ? "TRUE" : "FALSE";
+			case REMOTEUI_PARAM_BOOL: { // GSDONE
+				bool v;
+				if (isUsingGetterSetter()) {
+					v = floatGetter();
+				} else {
+					v = *floatValAddr;
+				}
+				return v ? "TRUE" : "FALSE";
+			}
 			case REMOTEUI_PARAM_STRING:
 				return *stringValAddr;
 			case REMOTEUI_PARAM_COLOR: {
@@ -295,7 +349,7 @@ public:
 			case REMOTEUI_PARAM_ENUM:
 				printf("enum: %d [%d, %d]\n", intVal, minInt, maxInt);
 				break;
-			case REMOTEUI_PARAM_BOOL:
+			case REMOTEUI_PARAM_BOOL: // GSBDONE
 				printf("bool: %s\n", boolVal ? "TRUE" : "FALSE");
 				break;
 			case REMOTEUI_PARAM_STRING:
@@ -325,6 +379,8 @@ public:
 	float maxFloat;
 	std::function<float()> floatGetter;
 	std::function<void(float)> floatSetter;
+	std::function<bool()> boolGetter;
+	std::function<void(bool)> boolSetter;
 
 	int *intValAddr;
 	int intVal;
@@ -363,31 +419,3 @@ struct RemoteUIServerCallBackArg {
 	string host;
 	string group;
 };
-
-#ifdef OF_AVAILABLE
-#define RLOG_NOTICE (ofLogNotice("ofxRemoteUI"))
-#define RLOG_ERROR (ofLogError("ofxRemoteUI"))
-#define RLOG_WARNING (ofLogWarning("ofxRemoteUI"))
-#define RLOG_VERBOSE (ofLogVerbose("ofxRemoteUI"))
-#elif defined(CINDER_AVAILABLE)
-// First, re-wrap cinder logging macros to take stream input
-#define CI_STREAM_LOG_V (::cinder::log::Entry(ci::log::LEVEL_VERBOSE, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
-#define CI_STREAM_LOG_D (::cinder::log::Entry(ci::log::LEVEL_DEBUG, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
-#define CI_STREAM_LOG_I (::cinder::log::Entry(ci::log::LEVEL_INFO, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
-#define CI_STREAM_LOG_W (::cinder::log::Entry(ci::log::LEVEL_WARNING, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
-#define CI_STREAM_LOG_E (::cinder::log::Entry(ci::log::LEVEL_ERROR, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
-#define CI_STREAM_LOG_F (::cinder::log::Entry(ci::log::LEVEL_FATAL, ::cinder::log::Location(CINDER_CURRENT_FUNCTION, __FILE__, __LINE__)))
-
-#define RLOG_NOTICE (CI_STREAM_LOG_I)
-#define RLOG_ERROR (CI_STREAM_LOG_E)
-#define RLOG_WARNING (CI_STREAM_LOG_W)
-#define RLOG_VERBOSE (CI_STREAM_LOG_V)
-#else
-// TODO!
-#define RLOG_NOTICE (cout << endl)
-#define RLOG_ERROR (cout << endl)
-#define RLOG_WARNING (cout << endl)
-#define RLOG_VERBOSE (cout << endl)
-#endif
-
-#endif // emptyExample_RemoteParam_h

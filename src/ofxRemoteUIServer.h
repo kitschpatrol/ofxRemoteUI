@@ -77,6 +77,7 @@ public:
 	void saveToXML(string fileName, bool oldFormat = false);												// save the whole list of params to an xml
 	void saveGroupToXML(string fileName, string groupName, bool oldFormat = false); // save only a subset of params into xml
 
+	// TODO templates?
 	void shareParam(string paramName, float *param, float min, float max, ofColor bgColor = ofColor(0, 0, 0, 0));
 	void shareParam(string paramName, bool *param, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0); //"nothing" args are just to match other methods
 	void shareParam(string paramName, int *param, int min, int max, ofColor bgColor = ofColor(0, 0, 0, 0));
@@ -86,6 +87,7 @@ public:
 	void shareParam(string paramName, unsigned char *param, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0);				// ofColor
 
 	void shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max, ofColor c = ofColor(0, 0, 0, 0));
+	void shareParam(string paramName, std::function<bool()> getter, std::function<void(bool)> setter, ofColor c = ofColor(0, 0, 0, 0));
 
 	void addSpacer(string name);
 
