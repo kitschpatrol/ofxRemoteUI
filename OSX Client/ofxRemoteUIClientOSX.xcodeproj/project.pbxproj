@@ -56,9 +56,9 @@
 		BBB62801191C4D3B005F95BF /* Growl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBB627FE191C4D3B005F95BF /* Growl.framework */; };
 		BBB62802191C4D3B005F95BF /* VVBasics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBB627FF191C4D3B005F95BF /* VVBasics.framework */; };
 		BBB62803191C4D3B005F95BF /* VVMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBB62800191C4D3B005F95BF /* VVMIDI.framework */; };
-		BBB62805191C4D72005F95BF /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = BBB627FE191C4D3B005F95BF /* Growl.framework */; };
-		BBB62806191C4D73005F95BF /* VVBasics.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = BBB627FF191C4D3B005F95BF /* VVBasics.framework */; };
-		BBB62807191C4D75005F95BF /* VVMIDI.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = BBB62800191C4D3B005F95BF /* VVMIDI.framework */; };
+		BBB62805191C4D72005F95BF /* Growl.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = BBB627FE191C4D3B005F95BF /* Growl.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BBB62806191C4D73005F95BF /* VVBasics.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = BBB627FF191C4D3B005F95BF /* VVBasics.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		BBB62807191C4D75005F95BF /* VVMIDI.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = BBB62800191C4D3B005F95BF /* VVMIDI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		BBB6280A191C4EC9005F95BF /* ofxRemoteUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BBB62808191C4EC9005F95BF /* ofxRemoteUI.cpp */; };
 		BBD3270F173BFFF200D59359 /* ofxRemoteUIClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BBAAAFA7173BF54B00FE94C4 /* ofxRemoteUIClient.cpp */; };
 		BBD789A61AA148700061EC66 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BBD789A51AA148700061EC66 /* IOKit.framework */; };
@@ -571,7 +571,7 @@
 		73002CCD140ABCF60035299A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0510;
+				LastUpgradeCheck = 0720;
 			};
 			buildConfigurationList = 73002CD0140ABCF60035299A /* Build configuration list for PBXProject "ofxRemoteUIClientOSX" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -747,9 +747,11 @@
 		73002CF2140ABCF60035299A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_TESTABILITY = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -775,7 +777,7 @@
 				);
 				INFOPLIST_FILE = "Resources/ofxRemoteUIClientOSX-Info.plist";
 				INFOPLIST_OUTPUT_FORMAT = XML;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
@@ -784,7 +786,8 @@
 		73002CF3140ABCF60035299A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PREFIX_HEADER = "src/ofxRemoteUIClientOSX-Prefix.pch";
@@ -804,7 +807,7 @@
 				);
 				INFOPLIST_FILE = "Resources/ofxRemoteUIClientOSX-Info.plist";
 				INFOPLIST_OUTPUT_FORMAT = XML;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -815,6 +818,7 @@
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -825,7 +829,8 @@
 				GCC_C_LANGUAGE_STANDARD = "compiler-default";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = "cat.uri.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = ofxRemoteUIClientOSX;
 				STRIP_INSTALLED_PRODUCT = YES;
 				WRAPPER_EXTENSION = app;
@@ -838,6 +843,7 @@
 				CLANG_ENABLE_OBJC_ARC = NO;
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEAD_CODE_STRIPPING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -849,7 +855,8 @@
 				GCC_OPTIMIZATION_LEVEL = s;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_BUNDLE_IDENTIFIER = "cat.uri.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = ofxRemoteUIClientOSX;
 				STRIP_INSTALLED_PRODUCT = YES;
 				WRAPPER_EXTENSION = app;

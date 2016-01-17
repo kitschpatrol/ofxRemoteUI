@@ -15,6 +15,14 @@
 #include "cinder/app/App.h"
 #endif
 
+
+
+using namespace std;
+
+#include <iostream>
+#include <sstream>
+#include <stdio.h>
+
 // Logging Wrappers
 #ifdef OF_AVAILABLE
 #define RLOG_NOTICE (ofLogNotice("ofxRemoteUI"))
@@ -43,11 +51,6 @@
 #endif
 
 #endif // emptyExample_RemoteParam_h
-
-using namespace std;
-
-#include <sstream>
-#include <stdio.h>
 
 enum RemoteUICallClientAction {
 	SERVER_CONNECTED,

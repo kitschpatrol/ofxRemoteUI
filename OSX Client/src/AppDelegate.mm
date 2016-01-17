@@ -53,12 +53,12 @@ void clientCallback(RemoteUIClientCallBackArg a){
 
 		case SERVER_SENT_FULL_PARAMS_UPDATE:
 			//NSLog(@"## Callback: PARAMS_UPDATED");
-			if(me->needFullParamsUpdate){ //a bit ugly here...
-				[me fullParamsUpdate];
-				me->needFullParamsUpdate = NO;
-			}else{
-				[[me getExternalDevices] updateDevicesWithClientValues:FALSE resetToZero: FALSE paramName:""]; //udpate midi motors to match values
-			}
+			//if(me->needFullParamsUpdate){ //a bit ugly here...
+			[me fullParamsUpdate];
+			me->needFullParamsUpdate = NO;
+			//}else{
+			[[me getExternalDevices] updateDevicesWithClientValues:FALSE resetToZero: FALSE paramName:""]; //udpate midi motors to match values
+			//}
 			[me partialParamsUpdate];
 			[me updateGroupPopup];
 			break;
