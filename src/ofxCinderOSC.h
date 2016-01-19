@@ -49,12 +49,12 @@ class ofxOscSender {
 	friend class ofxOscReceiver;
 
 public:
-	void setup(std::string hostname, int port);
+	void setup(std::string hostname, int port, bool broadcast = false);
 	void sendMessage(ofxOscMessage &message);
 	// void sendBundle( ofxOscBundle& bundle ); // TODO
+	ci::osc::UdpSocketRef mSocket; // sharedptr
 private:
-	// broadcast?
-	std::unique_ptr<ci::osc::SenderUdp> mSenderRef = nullptr;
+	std::shared_ptr<ci::osc::SenderUdp> mSenderRef = nullptr;
 };
 
 class ofxOscReceiver {

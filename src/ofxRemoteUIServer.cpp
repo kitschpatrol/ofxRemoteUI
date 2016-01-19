@@ -1003,10 +1003,14 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 #endif
 
 		if (doBroadcast) {
-			//#ifdef CINDER_AVAILABLE
+#ifdef CINDER_AVAILABLE
 			//			// Cinder's OSC library needs a flag to broadcast TODO
 			//			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
-			//#else
+
+			// temp limit broacast to local... having issues TODO
+			multicastIP = "127.0.0.1";
+#endif
+
 			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT); // multicast @
 																																			//#endif
 
@@ -1846,7 +1850,7 @@ void ofxRemoteUIServer::updateServer(float dt) {
 		RemoteUIServerCallBackArg cbArg; // to notify our "delegate"
 		cbArg.host = m.getRemoteIp();
 
-		std::cout << "dm.action: " << dm.action << std::endl;
+		// std::cout << "dm.action: " << dm.action << std::endl;
 
 		switch (dm.action) {
 

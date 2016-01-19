@@ -5,9 +5,13 @@
 //  Created by Eric Mika on 1/19/16.
 //
 //
+#include "ofxCinderOSC.h"
 
 #include "cinder/Log.h"
-#include "ofxCinderOSC.h"
+#include "cinder/app/App.h"
+
+using namespace asio;
+using namespace asio::ip;
 
 #pragma mark - ofxOscMessage
 
@@ -87,12 +91,36 @@ ofxOscMessage &ofxOscMessage::copy(const ofxOscMessage &other) {
 	return *this;
 }
 
-#pragma mark - ofxOscReceiver
-void ofxOscSender::setup(std::string hostname, int port) {
+#pragma mark - ofxOscSender
+
+void ofxOscSender::setup(std::string hostname, int port, bool broadcast) {
 	if (mSenderRef != nullptr) {
+		//	mSocket->close(); // ?
 		mSenderRef->close();
 	}
-	mSenderRef = std::unique_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(1111, hostname, port));
+
+	// TODO deal with creating
+
+	//	static int localPort = 12345;
+
+	//	mSocket = std::make_shared<udp::socket>(udp::socket(ci::app::App::get()->io_service(), udp::endpoint(udp::v4(), 1234)));
+	//	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(mSocket, udp::endpoint(address::from_string(hostname), port)));
+
+	//	mSocket->set_option(asio::socket_base::broadcast(true));
+	// why no work!?
+	//	std::cout << "address_v4::broadcast() " << address_v4::broadcast() << std::endl;
+	//	mSocket = std::shared_ptr<udp::socket>(new udp::socket(ci::app::App::get()->io_service(), udp::endpoint(udp::v4(), 1234)));
+	//	udp::endpoint remoteEndpoint = udp::endpoint(address::from_string(hostname), port);
+	//	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(mSocket, remoteEndpoint));
+
+	// SIgnature
+	//	SenderUdp( uint16_t localPort,
+	//			   const std::string &destinationHost,
+	//			   uint16_t destinationPort,
+	//			   const protocol &protocol = protocol::v4(),
+	//			   asio::io_service &service = ci::app::App::get()->io_service() );
+
+	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(12345, hostname, port));
 
 	mSenderRef->setSocketTransportErrorFn(																					 //
 			[](const asio::error_code &error, const std::string &oscAddress) {					 //
@@ -118,9 +146,9 @@ void ofxOscReceiver::setup(int listen_port) {
 
 	mReceiverRef = std::unique_ptr<ci::osc::ReceiverUdp>(new ci::osc::ReceiverUdp(listen_port));
 
-	mReceiverRef->setSocketErrorFn(																										 //
-			[](const asio::error_code &error, const asio::ip::udp::endpoint &oscAddress) { //
-				CI_LOG_E("Set Socket Error: " << error << " OSC Address: " << oscAddress);	 //
+	mReceiverRef->setSocketErrorFn(																									 //
+			[](const asio::error_code &error, const udp::endpoint &oscAddress) {				 //
+				CI_LOG_E("Set Socket Error: " << error << " OSC Address: " << oscAddress); //
 
 			});
 
