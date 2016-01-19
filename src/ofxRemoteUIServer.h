@@ -23,10 +23,9 @@
 #endif
 
 #ifdef CINDER_AVAILABLE
-#include "OscListener.h"
-#include "OscSender.h"
 #include "cinder/Cinder.h"
 #include "cinder/app/App.h"
+#include "ofxCinderOSC.h"
 #endif
 
 #include <map>

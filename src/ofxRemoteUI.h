@@ -18,13 +18,8 @@
 
 #ifdef CINDER_AVAILABLE
 #include "ofStolenUtils.h"
-// Use Cinder's built-in OSC block has nearly the same interface as OF's.
-// A few tweaks are still required here and there.
-#include "OscListener.h"
-#include "OscSender.h"
-typedef ci::osc::Message ofxOscMessage;
-typedef ci::osc::Sender ofxOscSender;
-typedef ci::osc::Listener ofxOscReceiver;
+// Wrap Cinder's new OSC API in the old style
+#include "ofxCinderOSC.h"
 #else
 // you will need to add this to your "Header Search Path" for ofxOsc to compile
 // ../../../addons/ofxOsc/libs ../../../addons/ofxOsc/libs/oscpack ../../../addons/ofxOsc/libs/oscpack/src ../../../addons/ofxOsc/libs/oscpack/src/ip
@@ -38,8 +33,8 @@ typedef ci::osc::Listener ofxOscReceiver;
 #include <vector>
 
 #if __cplusplus >= 201103L || defined(_MSC_VER)
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 #else
 #include <tr1/unordered_map>
 using std::tr1::unordered_map;
@@ -301,7 +296,7 @@ protected:
 	vector<string> paramsChangedSinceLastCheck;
 
 	unordered_map<string, RemoteUIParam> paramsFromCode; // this will hold a copy of all the params as they where when shared first
-	unordered_map<string, RemoteUIParam> paramsFromXML; // this will hold a copy of all the params as they where when first loaded from XML
+	unordered_map<string, RemoteUIParam> paramsFromXML;	// this will hold a copy of all the params as they where when first loaded from XML
 	unordered_map<string, bool> paramsLoadedFromXML;
 
 private:

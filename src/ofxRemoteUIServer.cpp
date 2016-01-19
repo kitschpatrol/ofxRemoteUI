@@ -1003,12 +1003,12 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 #endif
 
 		if (doBroadcast) {
-#ifdef CINDER_AVAILABLE
-			// Cinder's OSC library needs a flag to broadcast
-			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
-#else
+			//#ifdef CINDER_AVAILABLE
+			//			// Cinder's OSC library needs a flag to broadcast TODO
+			//			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
+			//#else
 			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT); // multicast @
-#endif
+																																			//#endif
 
 			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << "sec at this multicast @ " << multicastIP << ":"
 									<< OFXREMOTEUI_BROADCAST_PORT;
@@ -1798,6 +1798,7 @@ void ofxRemoteUIServer::handleBroadcast() {
 			}
 
 			ofxOscMessage m;
+			m.setAddress("/");						// hmmm TODO
 			m.addIntArg(port);						// 0
 			m.addStringArg(computerName); // 1
 			m.addStringArg(binaryName);		// 2
@@ -1844,6 +1845,9 @@ void ofxRemoteUIServer::updateServer(float dt) {
 		DecodedMessage dm = decode(m);
 		RemoteUIServerCallBackArg cbArg; // to notify our "delegate"
 		cbArg.host = m.getRemoteIp();
+
+		std::cout << "dm.action: " << dm.action << std::endl;
+
 		switch (dm.action) {
 
 			case HELO_ACTION: // if client says hi, say hi back
