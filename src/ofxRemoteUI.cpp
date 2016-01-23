@@ -7,10 +7,6 @@
 //
 
 #include "ofxRemoteUI.h"
-#include "uriencode.h"
-#include <iostream>
-#include <sstream>
-#include <stdlib.h>
 
 #if !defined(__APPLE__) && !defined(_WINDOWS)
 #ifndef __linux__
@@ -26,11 +22,17 @@
 #endif
 
 #ifdef _WINDOWS
+#if !defined(_WINSOCK2API_)
 #include <WinSock2.h>
+#endif
 #include <iphlpapi.h>
-#include <windows.h>
 #pragma comment(lib, "iphlpapi.lib")
 #endif
+
+#include "uriencode.h"
+#include <iostream>
+#include <sstream>
+#include <stdlib.h>
 
 void split(vector<string> &tokens, const string &text, char separator) {
 	std::size_t start = 0, end = 0;
