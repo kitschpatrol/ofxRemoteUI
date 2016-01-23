@@ -7,8 +7,8 @@
 //
 
 #ifdef _WINDOWS
-#include <direct.h>
 #include "dirent_vs.h"
+#include <direct.h>
 #if !defined(_WINSOCK2API_)
 #include <WinSock2.h>
 #endif
