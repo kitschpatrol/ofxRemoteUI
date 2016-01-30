@@ -95,7 +95,7 @@ ofxOscMessage &ofxOscMessage::copy(const ofxOscMessage &other) {
 
 void ofxOscSender::setup(std::string hostname, int port, bool broadcast) {
 	if (mSenderRef != nullptr) {
-		//	mSocket->close(); // ?
+		// mSocket->close(); // Spares a asio.system:48 runtime crash on Mac Release builds?
 		mSenderRef->close();
 	}
 
