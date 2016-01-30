@@ -15,8 +15,6 @@
 #include "cinder/app/App.h"
 #endif
 
-
-
 using namespace std;
 
 #include <iostream>
@@ -206,7 +204,9 @@ public:
 			case REMOTEUI_PARAM_BOOL: // GSBDONE
 				return (boolGetter != nullptr) && (boolSetter != nullptr);
 				break;
-			case REMOTEUI_PARAM_ENUM:
+			case REMOTEUI_PARAM_ENUM: // GSEDONE
+				return (intGetter != nullptr) && (intSetter != nullptr);
+				break;
 			case REMOTEUI_PARAM_INT:
 			case REMOTEUI_PARAM_STRING:
 			case REMOTEUI_PARAM_COLOR:
@@ -231,7 +231,7 @@ public:
 				if (p.maxFloat != maxFloat)
 					equal = false;
 				break;
-			case REMOTEUI_PARAM_ENUM:
+			case REMOTEUI_PARAM_ENUM: // GSBDONE
 			case REMOTEUI_PARAM_INT:
 				if (p.intVal != intVal)
 					equal = false;
@@ -270,7 +270,7 @@ public:
 			case REMOTEUI_PARAM_FLOAT: // GSDONE
 				ss << floatVal;
 				return ss.str();
-			case REMOTEUI_PARAM_ENUM:
+			case REMOTEUI_PARAM_ENUM: // GSBDONE
 				if (intVal >= minInt && intVal <= maxInt && (intVal - minInt) < enumList.size())
 					ss << enumList[intVal - minInt];
 				else
@@ -305,12 +305,19 @@ public:
 					ss << *floatValAddr;
 				}
 				return ss.str();
-			case REMOTEUI_PARAM_ENUM: {
-				int v = *intValAddr;
-				if (v >= minInt && v <= maxInt && (v - minInt) < enumList.size())
+			case REMOTEUI_PARAM_ENUM: { // GSEDONE
+				int v;
+				if (isUsingGetterSetter()) {
+					v = intGetter();
+				} else {
+					v = *intValAddr;
+				}
+
+				if (v >= minInt && v <= maxInt && (v - minInt) < enumList.size()) {
 					ss << enumList[v - minInt];
-				else
+				} else {
 					ss << "Invalid Enum!";
+				}
 				return ss.str();
 			}
 			case REMOTEUI_PARAM_INT:
@@ -349,7 +356,7 @@ public:
 			case REMOTEUI_PARAM_COLOR:
 				printf("color: RGBA(%d %d %d %d)\n", redVal, greenVal, blueVal, alphaVal);
 				break;
-			case REMOTEUI_PARAM_ENUM:
+			case REMOTEUI_PARAM_ENUM: // GSEDONE
 				printf("enum: %d [%d, %d]\n", intVal, minInt, maxInt);
 				break;
 			case REMOTEUI_PARAM_BOOL: // GSBDONE
@@ -384,6 +391,8 @@ public:
 	std::function<void(float)> floatSetter;
 	std::function<bool()> boolGetter;
 	std::function<void(bool)> boolSetter;
+	std::function<bool()> intGetter;
+	std::function<void(int)> intSetter;
 
 	int *intValAddr;
 	int intVal;

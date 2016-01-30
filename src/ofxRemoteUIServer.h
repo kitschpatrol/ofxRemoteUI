@@ -87,6 +87,8 @@ public:
 
 	void shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max, ofColor c = ofColor(0, 0, 0, 0));
 	void shareParam(string paramName, std::function<bool()> getter, std::function<void(bool)> setter, ofColor c = ofColor(0, 0, 0, 0));
+	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names,
+									ofColor c = ofColor(0, 0, 0, 0)); // enum
 
 	void addSpacer(string name);
 

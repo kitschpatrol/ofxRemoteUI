@@ -375,14 +375,17 @@ void ofxRemoteUI::updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage 
 			break;
 
 		case ENUM_ARG: {
-			p.type = REMOTEUI_PARAM_ENUM;
+			p.type = REMOTEUI_PARAM_ENUM; // GSEDONE
 			p.intVal = m.getArgAsInt32(arg);
 			arg++;
 			p.minInt = m.getArgAsInt32(arg);
 			arg++;
 			p.maxInt = m.getArgAsInt32(arg);
 			arg++;
-			if (p.intValAddr) {
+
+			if (p.isUsingGetterSetter()) {
+				p.intSetter(p.intVal);
+			} else if (p.intValAddr) {
 				*p.intValAddr = p.intVal;
 			}
 			int n = m.getNumArgs() - 5 - 3; // 3 >> the int vals, 5 >> 4 colors + 1 group
@@ -523,9 +526,11 @@ void ofxRemoteUI::syncPointerToParam(string paramName) {
 			}
 			break;
 
-		case REMOTEUI_PARAM_ENUM:
+		case REMOTEUI_PARAM_ENUM: // GSEDONE
 		case REMOTEUI_PARAM_INT:
-			if (p.intValAddr) {
+			if (p.isUsingGetterSetter()) {
+				p.intSetter(p.intVal);
+			} else if (p.intValAddr) {
 				*p.intValAddr = p.intVal;
 			}
 			break;
@@ -573,9 +578,11 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 			}
 			break;
 
-		case REMOTEUI_PARAM_ENUM:
+		case REMOTEUI_PARAM_ENUM: // GSEDONE
 		case REMOTEUI_PARAM_INT:
-			if (p.intValAddr) {
+			if (p.isUsingGetterSetter()) {
+				p.intVal = p.intGetter();
+			} else if (p.intValAddr) {
 				p.intVal = *p.intValAddr;
 			}
 			break;
@@ -620,9 +627,11 @@ bool ofxRemoteUI::hasParamChanged(RemoteUIParam p) {
 			}
 			return false;
 
-		case REMOTEUI_PARAM_ENUM:
+		case REMOTEUI_PARAM_ENUM: // GSEDONE
 		case REMOTEUI_PARAM_INT:
-			if (p.intValAddr) {
+			if (p.isUsingGetterSetter()) {
+				return (p.intVal != p.intGetter());
+			} else if (p.intValAddr) {
 				return (*p.intValAddr != p.intVal);
 			}
 			return false;
@@ -663,7 +672,7 @@ string ofxRemoteUI::stringForParamType(RemoteUIParamType t) {
 			return "INT";
 		case REMOTEUI_PARAM_COLOR:
 			return "COL";
-		case REMOTEUI_PARAM_ENUM:
+		case REMOTEUI_PARAM_ENUM: // GSEDONE
 			return "ENU";
 		case REMOTEUI_PARAM_BOOL: // GSBDONE
 			return "BOL";
@@ -723,7 +732,7 @@ string ofxRemoteUI::getValuesAsString() {
 			case REMOTEUI_PARAM_COLOR:
 				out << (int)param.redVal << " " << (int)param.greenVal << " " << (int)param.blueVal << " " << (int)param.alphaVal << " " << endl;
 				break;
-			case REMOTEUI_PARAM_ENUM:
+			case REMOTEUI_PARAM_ENUM: // GSEDONE
 				out << param.intVal << endl;
 				break;
 			case REMOTEUI_PARAM_BOOL: // GSBDONE
@@ -777,7 +786,7 @@ void ofxRemoteUI::setValuesFromString(string values) {
 					std::getline(ss, token, ' ');
 					param.alphaVal = atoi(token.c_str());
 				}
-				case REMOTEUI_PARAM_ENUM:
+				case REMOTEUI_PARAM_ENUM: // GSEDONE
 					valstr >> param.intVal;
 					break;
 				case REMOTEUI_PARAM_BOOL: // GSBDONE
@@ -839,7 +848,7 @@ void ofxRemoteUI::sendParam(string paramName, RemoteUIParam p) {
 		case REMOTEUI_PARAM_STRING:
 			m.addStringArg(p.stringVal);
 			break;
-		case REMOTEUI_PARAM_ENUM: {
+		case REMOTEUI_PARAM_ENUM: { // GSEDONE
 			m.addIntArg(p.intVal);
 			m.addIntArg(p.minInt);
 			m.addIntArg(p.maxInt);

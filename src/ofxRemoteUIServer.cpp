@@ -301,8 +301,16 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 			s.setAttribute(OFXREMOTEUI_COLOR_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, key, c.numColors);
 			c.numColors++;
 		} break;
-		case REMOTEUI_PARAM_ENUM: {
-			int v = t.intValAddr ? *t.intValAddr : t.intVal;
+		case REMOTEUI_PARAM_ENUM: { // GSEDONE
+			int v;
+			if (t.isUsingGetterSetter()) {
+				v = t.intGetter();
+			} else if (t.intValAddr) {
+				v = *t.intValAddr;
+			} else {
+				v = t.intVal;
+			}
+
 			if (verbose_) {
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			}
@@ -404,8 +412,16 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 			s.setAttribute("c2.blue", ofToString((int)b));
 			s.setAttribute("c3.alpha", ofToString((int)a));
 		} break;
-		case REMOTEUI_PARAM_ENUM: {
-			int v = t.intValAddr ? *t.intValAddr : t.intVal;
+		case REMOTEUI_PARAM_ENUM: { // GSEDONE
+			int v;
+			if (t.isUsingGetterSetter()) {
+				v = t.intGetter();
+			} else if (intValAddress) {
+				v = *t.intValAddr;
+			} else {
+				v = t.intVal;
+			}
+
 			if (verbose_)
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			s.addValue("P", v);
@@ -705,15 +721,22 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 
 					case 'e': { // enum
 						if (!isAParamWeKnowOf) {
-							p.type = REMOTEUI_PARAM_ENUM;
+							p.type = REMOTEUI_PARAM_ENUM; // GSEDONE
 							p.intVal = s.getIntValue();
 						} else {
-							if (p.type != REMOTEUI_PARAM_ENUM) {
+							if (p.type != REMOTEUI_PARAM_ENUM) { // GSEDONE
 								RLOG_ERROR << "type missmatch parsing '" << paramName << "'. Ignoring it!";
 								break;
 							}
 							int val = ofClamp(s.getIntValue(), p.minInt, p.maxInt);
-							p.intVal = *p.intValAddr = val;
+
+							if (p.isUsingGetterSetter()) {
+								p.intVal = p.intGetter();
+							} else if (p.intValAddr) {
+								p.intVal = *p.intValAddr
+							} else {
+								p.intVal = val;
+							}
 							if (verbose_)
 								RLOG_NOTICE << "loading an ENUM '" << paramName << "' (" << (int)*p.intValAddr << ") from XML";
 						}
@@ -1282,7 +1305,7 @@ bool ofxRemoteUIServer::_keyPressed(ofKeyEventArgs &e) {
 								p.floatVal += sign * (p.maxFloat - p.minFloat) * 0.0025;
 								p.floatVal = ofClamp(p.floatVal, p.minFloat, p.maxFloat);
 								break;
-							case REMOTEUI_PARAM_ENUM:
+							case REMOTEUI_PARAM_ENUM: // GSEDONE
 							case REMOTEUI_PARAM_INT:
 								p.intVal += sign;
 								p.intVal = ofClamp(p.intVal, p.minInt, p.maxInt);
@@ -1605,7 +1628,7 @@ void ofxRemoteUIServer::draw(int x, int y) {
 					case REMOTEUI_PARAM_FLOAT: // GSDONE
 						drawString(ofToString(p.floatVal), x + valOffset, y);
 						break;
-					case REMOTEUI_PARAM_ENUM:
+					case REMOTEUI_PARAM_ENUM: // GSEDONE
 						if (p.intVal >= 0 && p.intVal < p.enumList.size() && p.enumList.size() > 0) {
 							string val = p.enumList[p.intVal];
 							if (val.length() > column2MaxLen) {
@@ -2319,12 +2342,33 @@ void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int ma
 		RLOG_NOTICE << "Sharing Int Param '" << paramName << "'";
 }
 
+void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names,
+																	 ofColor c) {
+	if (names.size() != max - min + 1) {
+		RLOG_ERROR << "Error sharing enum param '" << paramName << "': Number of supplied strings doesnt match enum range!";
+	}
+	RemoteUIParam p;
+	p.type = REMOTEUI_PARAM_ENUM; // GSEDONE
+	p.intValAddr = nullptr;
+	p.intVal = getter();
+	p.intSetter = setter;
+	p.intGetter = getter;
+	p.maxInt = max;
+	p.minInt = min;
+	p.enumList = names;
+	p.group = upcomingGroup;
+	setColorForParam(p, c);
+	addParamToDB(p, paramName);
+	if (verbose_)
+		RLOG_NOTICE << "Sharing Getter / Setter Enum Param '" << paramName << "'";
+}
+
 void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int max, vector<string> names, ofColor c) {
 	if (names.size() != max - min + 1) {
 		RLOG_ERROR << "Error sharing enum param '" << paramName << "': Number of supplied strings doesnt match enum range!";
 	}
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_ENUM;
+	p.type = REMOTEUI_PARAM_ENUM; // GSEDONE
 	p.intValAddr = param;
 	p.maxInt = max;
 	p.minInt = min;
@@ -2339,7 +2383,7 @@ void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int ma
 
 void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int max, string *names, ofColor c) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_ENUM;
+	p.type = REMOTEUI_PARAM_ENUM; // GSEDONE
 	p.intValAddr = param;
 	p.maxInt = max;
 	p.minInt = min;
