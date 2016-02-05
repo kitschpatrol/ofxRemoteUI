@@ -2271,6 +2271,8 @@ void ofxRemoteUIServer::addSpacer(string title) {
 }
 
 // New, param getters and setters (See GSDONE comments elsewhere...)
+			
+	
 void ofxRemoteUIServer::shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max, ofColor c) {
 	RemoteUIParam p;
 	p.type = REMOTEUI_PARAM_FLOAT; // GSDONE
@@ -2283,8 +2285,9 @@ void ofxRemoteUIServer::shareParam(string paramName, std::function<float()> gett
 	p.group = upcomingGroup;
 	setColorForParam(p, c);
 	addParamToDB(p, paramName);
-	if (verbose_)
+	if (verbose_) {
 		RLOG_NOTICE << "Sharing Getter / Setter Float Param '" << paramName << "'";
+	}
 }
 
 void ofxRemoteUIServer::shareParam(string paramName, float *param, float min, float max, ofColor c) {
@@ -2297,8 +2300,9 @@ void ofxRemoteUIServer::shareParam(string paramName, float *param, float min, fl
 	p.group = upcomingGroup;
 	setColorForParam(p, c);
 	addParamToDB(p, paramName);
-	if (verbose_)
+	if (verbose_) {
 		RLOG_NOTICE << "Sharing Float Param '" << paramName << "'";
+	}
 }
 
 void ofxRemoteUIServer::shareParam(string paramName, bool *param, ofColor c, int nothingUseful) {
@@ -2309,8 +2313,9 @@ void ofxRemoteUIServer::shareParam(string paramName, bool *param, ofColor c, int
 	p.group = upcomingGroup;
 	setColorForParam(p, c);
 	addParamToDB(p, paramName);
-	if (verbose_)
+	if (verbose_) {
 		RLOG_NOTICE << "Sharing Bool Param '" << paramName << "'";
+	}
 }
 
 // New, param getters and setters (See GSBDONE comments elsewhere...)
@@ -2324,8 +2329,9 @@ void ofxRemoteUIServer::shareParam(string paramName, std::function<bool()> gette
 	p.group = upcomingGroup;
 	setColorForParam(p, c);
 	addParamToDB(p, paramName);
-	if (verbose_)
+	if (verbose_) {
 		RLOG_NOTICE << "Sharing Getter / Setter Bool Param '" << paramName << "'";
+	}
 }
 
 void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int max, ofColor c) {
