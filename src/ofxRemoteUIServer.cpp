@@ -254,7 +254,7 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 
 	switch (t.type) {
 
-		case REMOTEUI_PARAM_FLOAT: { // GSDONE
+		case REMOTEUI_PARAM_FLOAT: { // GSFDONE
 			float v;
 
 			if (t.isUsingGetterSetter()) {
@@ -271,17 +271,30 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 			s.setAttribute(OFXREMOTEUI_FLOAT_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, key, c.numFloats);
 			c.numFloats++;
 		} break;
-		case REMOTEUI_PARAM_INT: {
-			int v = t.intValAddr ? *t.intValAddr : t.intVal;
+		case REMOTEUI_PARAM_INT: { // GSIDONE
+			int v;
+			if (t.isUsingGetterSetter()) {
+				v = t.intGetter();
+			} else if (t.intValAddr) {
+				v = *t.intValAddr;
+			} else {
+				v = t.intVal;
+			}
 			if (verbose_)
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			s.setValue(OFXREMOTEUI_INT_PARAM_XML_TAG, (int)v, c.numInts);
 			s.setAttribute(OFXREMOTEUI_INT_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, key, c.numInts);
 			c.numInts++;
 		} break;
-		case REMOTEUI_PARAM_COLOR: {
+		case REMOTEUI_PARAM_COLOR: { // GSCDONE
 			unsigned char r, g, b, a;
-			if (t.redValAddr) {
+			if (t.isUsingGetterSetter()) {
+				ofColor c = t.colorGetter();
+				r = c.r;
+				g = c.g;
+				b = c.b;
+				a = c.a;
+			} else if (t.redValAddr) {
 				r = *t.redValAddr;
 				g = *(t.redValAddr + 1);
 				b = *(t.redValAddr + 2);
@@ -336,8 +349,16 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 			s.setAttribute(OFXREMOTEUI_BOOL_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, key, c.numBools);
 			c.numBools++;
 		} break;
-		case REMOTEUI_PARAM_STRING: {
-			string v = t.stringValAddr ? *t.stringValAddr : t.stringVal;
+		case REMOTEUI_PARAM_STRING: { // GSSDONE
+			string v;
+			if (t.isUsingGetterSetter()) {
+				v = t.stringGetter();
+			} else if (t.stringValAddr) {
+				v = *t.stringValAddr;
+			} else {
+				v = t.stringVal;
+			}
+
 			if (verbose_)
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			s.setValue(OFXREMOTEUI_STRING_PARAM_XML_TAG, (string)v, c.numStrings);
@@ -362,7 +383,7 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 	string path = "P[" + ofToString(index) + "]";
 	switch (t.type) {
 
-		case REMOTEUI_PARAM_FLOAT: { // GSDONE
+		case REMOTEUI_PARAM_FLOAT: { // GSFDONE
 			float v;
 
 			if (t.isUsingGetterSetter() {
@@ -381,17 +402,30 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 			s.setTo(path);
 			s.setAttribute("type", "float");
 		} break;
-		case REMOTEUI_PARAM_INT: {
-			int v = t.intValAddr ? *t.intValAddr : t.intVal;
+		case REMOTEUI_PARAM_INT: { // GSIDONE
+			int v;
+			if (t.isUsingGetterSetter()) {
+				v = *t.intGetter;
+			} else if (t.intValAddr) {
+				v = *t.intValAddr;
+			} else {
+				v = t.intVal;
+			}
 			if (verbose_)
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			s.addValue("P", v);
 			s.setTo(path);
 			s.setAttribute("type", "int");
 		} break;
-		case REMOTEUI_PARAM_COLOR: {
+		case REMOTEUI_PARAM_COLOR: { // GSCDONE
 			unsigned char r, g, b, a;
-			if (t.redValAddr) {
+			if (t.isUsingGetterSetter()) {
+				ofColor c = t.colorGetter();
+				r = c.r;
+				g = c.g;
+				b = c.b;
+				a = c.a;
+			} else if (t.redValAddr) {
 				r = *t.redValAddr;
 				g = *(t.redValAddr + 1);
 				b = *(t.redValAddr + 2);
@@ -445,8 +479,16 @@ void ofxRemoteUIServer::saveParamToXmlSettings(const RemoteUIParam &t, string ke
 			s.setTo(path);
 			s.setAttribute("type", "bool");
 		} break;
-		case REMOTEUI_PARAM_STRING: {
-			string v = t.stringValAddr ? *t.stringValAddr : t.stringVal;
+		case REMOTEUI_PARAM_STRING: { // GSSDONE
+			string v;
+			if (t.isUsingGetterSetter()) {
+				v = t.stringGetter();
+			} else if (t.stringValAddr) {
+				v = *t.stringValAddr;
+			} else {
+				v = t.stringVal;
+			}
+
 			if (verbose_)
 				RLOG_NOTICE << "saving '" << key << "' (" << v << ") to XML";
 			s.addValue("P", v);
@@ -666,56 +708,72 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 
 					case 'f': { // float
 						if (!isAParamWeKnowOf) {
-							p.type = REMOTEUI_PARAM_FLOAT; // GSDONE
+							p.type = REMOTEUI_PARAM_FLOAT; // GSFDONE
 							p.floatVal = s.getFloatValue();
 						} else {
-							if (p.type != REMOTEUI_PARAM_FLOAT) { // GSDONE
+							if (p.type != REMOTEUI_PARAM_FLOAT) { // GSFDONE
 								RLOG_ERROR << "type missmatch parsing '" << paramName << "'. Ignoring it!";
 								break;
 							}
 							float val = ofClamp(s.getFloatValue(), p.minFloat, p.maxFloat);
-
 							if (p.isUsingGetterSetter()) {
-								p.floatVal = p.floatGetter();
+								p.floatSetter(val);
 							} else if (p.floatValAddr) {
-								p.floatVal = *p.floatValAddr
+								*p.floatValAddr = val;
 							} else {
 								p.floatVal = val;
 							}
 							if (verbose_)
-								RLOG_NOTICE << "loading a FLOAT '" << paramName << "' (" << ofToString(*p.floatValAddr, 3) << ") from XML";
+								RLOG_NOTICE << "loading a FLOAT '" << paramName << "' (" << ofToString(val, 3) << ") from XML";
 						}
 					} break;
 
 					case 'i': { // int
 						if (!isAParamWeKnowOf) {
-							p.type = REMOTEUI_PARAM_INT;
+							p.type = REMOTEUI_PARAM_INT; // GSIDONE
 							p.intVal = s.getFloatValue();
 						} else {
-							if (p.type != REMOTEUI_PARAM_INT) {
+							if (p.type != REMOTEUI_PARAM_INT) { // GSIDONE
 								RLOG_ERROR << "type missmatch parsing '" << paramName << "'. Ignoring it!";
 								break;
 							}
 							int val = ofClamp(s.getIntValue(), p.minInt, p.maxInt);
-							p.intVal = *p.intValAddr = val;
-							if (verbose_)
-								RLOG_NOTICE << "loading an INT '" << paramName << "' (" << (int)*p.intValAddr << ") from XML";
+							if (p.isUsingGetterSetter()) {
+								p.intSetter(val);
+							} else if (p.intValAddr) {
+								*p.intValAddr = val;
+							} else {
+								p.intVal = val;
+							}
+
+							if (verbose_) {
+								RLOG_NOTICE << "loading an INT '" << paramName << "' (" << (int)val << ") from XML";
+							}
 						}
 					} break;
 
 					case 's': { // string
 						if (!isAParamWeKnowOf) {
-							p.type = REMOTEUI_PARAM_STRING;
+							p.type = REMOTEUI_PARAM_STRING; // GSSDONE
 							p.stringVal = s.getValue();
 						} else {
-							if (p.type != REMOTEUI_PARAM_STRING) {
+							if (p.type != REMOTEUI_PARAM_STRING) { // GSSDONE
 								RLOG_ERROR << "type missmatch parsing '" << paramName << "'. Ignoring it!";
 								break;
 							}
 							string val = s.getValue();
-							p.stringVal = *p.stringValAddr = val;
-							if (verbose_)
-								RLOG_NOTICE << "loading a STRING '" << paramName << "' (" << (string)*p.stringValAddr << ") from XML";
+
+							if (p.isUsingGetterSetter()) {
+								p.stringSetter(val);
+							} else if (p.floatValAddr) {
+								*p.stringValAddr = val;
+							} else {
+								p.stringVal = val;
+							}
+
+							if (verbose_) {
+								RLOG_NOTICE << "loading a STRING '" << paramName << "' (" << (string)val << ") from XML";
+							}
 						}
 					} break;
 
@@ -729,7 +787,6 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 								break;
 							}
 							int val = ofClamp(s.getIntValue(), p.minInt, p.maxInt);
-
 							if (p.isUsingGetterSetter()) {
 								p.intVal = p.intGetter();
 							} else if (p.intValAddr) {
@@ -752,16 +809,16 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 								break;
 							}
 							bool val = s.getIntValue();
-
 							if (p.isUsingGetterSetter()) {
-								p.boolVal = p.boolGetter();
+								p.boolSetter(val);
 							} else if (p.boolValAddr) {
-								p.boolVal = *p.boolValAddr
+								*p.boolValAddr = val;
 							} else {
 								p.boolVal = val;
 							}
-							if (verbose_)
-								RLOG_NOTICE << "loading a BOOL '" << paramName << "' (" << (bool)*p.boolValAddr << ") from XML";
+							if (verbose_) {
+								RLOG_NOTICE << "loading a BOOL '" << paramName << "' (" << (bool)val << ") from XML";
+							}
 						}
 					} break;
 
@@ -777,13 +834,13 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 
 					case 'c': { // color
 						if (!isAParamWeKnowOf) {
-							p.type = REMOTEUI_PARAM_COLOR;
+							p.type = REMOTEUI_PARAM_COLOR; // GSCDONE
 							p.redVal = ofToInt(s.getAttribute("c0.red"));
 							p.greenVal = ofToInt(s.getAttribute("c1.green"));
 							p.blueVal = ofToInt(s.getAttribute("c2.blue"));
 							p.alphaVal = ofToInt(s.getAttribute("c3.alpha"));
 						} else {
-							if (p.type != REMOTEUI_PARAM_COLOR) {
+							if (p.type != REMOTEUI_PARAM_COLOR) { // GSCDONE
 								RLOG_ERROR << "type missmatch parsing '" << paramName << "'. Ignoring it!";
 								break;
 							}
@@ -791,54 +848,67 @@ vector<string> ofxRemoteUIServer::loadFromXMLv2(string fileName) {
 							unsigned char g = ofToInt(s.getAttribute("c1.green"));
 							unsigned char b = ofToInt(s.getAttribute("c2.blue"));
 							unsigned char a = ofToInt(s.getAttribute("c3.alpha"));
-							if (p.redValAddr != NULL) {
-								*p.redValAddr = p.redVal = r;
-								*(p.redValAddr + 1) = p.greenVal = g;
-								*(p.redValAddr + 2) = p.blueVal = b;
-								*(p.redValAddr + 3) = p.alphaVal = a;
-								if (verbose_)
-									RLOG_NOTICE << "loading a COLOR '" << paramName << "' (" << (int)*p.redValAddr << " " << (int)*(p.redValAddr + 1) << " "
-															<< (int)*(p.redValAddr + 2) << " " << (int)*(p.redValAddr + 3) << ") from XML";
+
+							if (p.isUsingGetterSetter()) {
+								ofColor c = ofColor(r, g, b, a);
+								p.colorSetter(c);
+							} else if (p.redValAddr != NULL) {
+								*p.redValAddr = r;
+								*(p.redValAddr + 1) = g;
+								*(p.redValAddr + 2) = b;
+								*(p.redValAddr + 3) = a;
 							} else {
-								RLOG_ERROR << "ERROR at loading COLOR (" << paramName << ")";
+								p.redVal = r;
+								p.greenVal = g;
+								p.blueVal = b;
+								p.alphaVal = a;
+							}
+
+							if (verbose_) {
+								RLOG_NOTICE << "loading a COLOR '" << paramName << "' (" << (int)r << " " << (int)g << " " << (int)b << " " << (int)a << ") from XML";
 							}
 						}
-					} break;
-				}
-
-				if (isAParamWeKnowOf) {
-					params[paramName] = p;
-				} else {
-					RLOG_WARNING << "Param '" << paramName << "' found in XML but not defined in source code! Keeping it arround to save back to XML";
-					if (params_removed.find(paramName) == params_removed.end()) { // not added yet
-						orderedKeys_removed[orderedKeys_removed.size()] = paramName;
+						else {
+							RLOG_ERROR << "ERROR at loading COLOR (" << paramName << ")";
+						}
 					}
-					params_removed[paramName] = p;
 				}
-
-				if (isAParamWeKnowOf && paramsLoadedFromXML.find(paramName) == paramsLoadedFromXML.end()) {
-					paramsLoadedFromXML[paramName] = true;
-					paramsFromXML[paramName] = p;
-				}
+				break;
 			}
-		}
-		s.setToParent();
-	}
 
-	vector<string> paramsNotInXML;
-	for (unordered_map<string, RemoteUIParam>::iterator ii = params.begin(); ii != params.end(); ++ii) {
-		string paramName = (*ii).first;
-		// param name found in xml
-		if (find(loadedParams.begin(), loadedParams.end(), paramName) != loadedParams.end()) {
+			if (isAParamWeKnowOf) {
+				params[paramName] = p;
+			} else {
+				RLOG_WARNING << "Param '" << paramName << "' found in XML but not defined in source code! Keeping it arround to save back to XML";
+				if (params_removed.find(paramName) == params_removed.end()) { // not added yet
+					orderedKeys_removed[orderedKeys_removed.size()] = paramName;
+				}
+				params_removed[paramName] = p;
+			}
 
-		} else {																						// param name not in xml
-			if ((*ii).second.type != REMOTEUI_PARAM_SPACER) { // spacers dont count as params really
-				paramsNotInXML.push_back(paramName);
+			if (isAParamWeKnowOf && paramsLoadedFromXML.find(paramName) == paramsLoadedFromXML.end()) {
+				paramsLoadedFromXML[paramName] = true;
+				paramsFromXML[paramName] = p;
 			}
 		}
 	}
-	loadedFromXML = true;
-	return paramsNotInXML;
+	s.setToParent();
+}
+
+vector<string> paramsNotInXML;
+for (unordered_map<string, RemoteUIParam>::iterator ii = params.begin(); ii != params.end(); ++ii) {
+	string paramName = (*ii).first;
+	// param name found in xml
+	if (find(loadedParams.begin(), loadedParams.end(), paramName) != loadedParams.end()) {
+
+	} else {																						// param name not in xml
+		if ((*ii).second.type != REMOTEUI_PARAM_SPACER) { // spacers dont count as params really
+			paramsNotInXML.push_back(paramName);
+		}
+	}
+}
+loadedFromXML = true;
+return paramsNotInXML;
 }
 #endif
 
@@ -1236,7 +1306,7 @@ bool ofxRemoteUIServer::_keyPressed(ofKeyEventArgs &e) {
 #ifdef CINDER_AVAILABLE
 						cbSignal.emit(cbArg);
 #endif
-					} else if (p.type == REMOTEUI_PARAM_COLOR) {
+					} else if (p.type == REMOTEUI_PARAM_COLOR) { // GSCDONE
 						selectedColorComp++;
 						if (selectedColorComp > 3)
 							selectedColorComp = 0;
@@ -1301,19 +1371,19 @@ bool ofxRemoteUIServer::_keyPressed(ofKeyEventArgs &e) {
 					if (p.type != REMOTEUI_PARAM_SPACER) {
 						uiAlpha = 0;
 						switch (p.type) {
-							case REMOTEUI_PARAM_FLOAT: // GSDONE
+							case REMOTEUI_PARAM_FLOAT: // GSFDONE
 								p.floatVal += sign * (p.maxFloat - p.minFloat) * 0.0025;
 								p.floatVal = ofClamp(p.floatVal, p.minFloat, p.maxFloat);
 								break;
 							case REMOTEUI_PARAM_ENUM: // GSEDONE
-							case REMOTEUI_PARAM_INT:
+							case REMOTEUI_PARAM_INT:	// GSIDONE
 								p.intVal += sign;
 								p.intVal = ofClamp(p.intVal, p.minInt, p.maxInt);
 								break;
-							case REMOTEUI_PARAM_BOOL: // GSDONE
+							case REMOTEUI_PARAM_BOOL: // GSBDONE
 								p.boolVal = !p.boolVal;
 								break;
-							case REMOTEUI_PARAM_COLOR:
+							case REMOTEUI_PARAM_COLOR: // GSCDONE
 								switch (selectedColorComp) {
 									case 0:
 										p.redVal += sign;
@@ -1625,7 +1695,7 @@ void ofxRemoteUIServer::draw(int x, int y) {
 				}
 
 				switch (p.type) {
-					case REMOTEUI_PARAM_FLOAT: // GSDONE
+					case REMOTEUI_PARAM_FLOAT: // GSFDONE
 						drawString(ofToString(p.floatVal), x + valOffset, y);
 						break;
 					case REMOTEUI_PARAM_ENUM: // GSEDONE
@@ -1639,16 +1709,16 @@ void ofxRemoteUIServer::draw(int x, int y) {
 							drawString(ofToString(p.intVal), x + valOffset, y);
 						}
 						break;
-					case REMOTEUI_PARAM_INT:
+					case REMOTEUI_PARAM_INT: // GSIDONE
 						drawString(ofToString(p.intVal), x + valOffset, y);
 						break;
-					case REMOTEUI_PARAM_BOOL: // GSDONE
+					case REMOTEUI_PARAM_BOOL: // GSBDONE
 						drawString(p.boolVal ? "true" : "false", x + valOffset, y);
 						break;
-					case REMOTEUI_PARAM_STRING:
+					case REMOTEUI_PARAM_STRING: // GSSDONE
 						drawString(p.stringVal, x + valOffset, y);
 						break;
-					case REMOTEUI_PARAM_COLOR: {
+					case REMOTEUI_PARAM_COLOR: { // GSIDONE
 						ofPushStyle();
 						ofSetColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal);
 						ofDrawRectangle(x + valOffset, y - spacing * 0.6, valSpaceW, spacing * 0.85);
@@ -2270,12 +2340,11 @@ void ofxRemoteUIServer::addSpacer(string title) {
 		RLOG_NOTICE << "Adding Group '" << title << "' ######################################";
 }
 
-// New, param getters and setters (See GSDONE comments elsewhere...)
-			
-	
+// New, param getters and setters (See GS<T>DONE comments elsewhere...)
+
 void ofxRemoteUIServer::shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max, ofColor c) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_FLOAT; // GSDONE
+	p.type = REMOTEUI_PARAM_FLOAT; // GSFDONE
 	p.floatValAddr = nullptr;
 	p.maxFloat = max;
 	p.minFloat = min;
@@ -2292,7 +2361,7 @@ void ofxRemoteUIServer::shareParam(string paramName, std::function<float()> gett
 
 void ofxRemoteUIServer::shareParam(string paramName, float *param, float min, float max, ofColor c) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_FLOAT; // GSDONE
+	p.type = REMOTEUI_PARAM_FLOAT; // GSFDONE
 	p.floatValAddr = param;
 	p.maxFloat = max;
 	p.minFloat = min;
@@ -2307,7 +2376,7 @@ void ofxRemoteUIServer::shareParam(string paramName, float *param, float min, fl
 
 void ofxRemoteUIServer::shareParam(string paramName, bool *param, ofColor c, int nothingUseful) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_BOOL; // GSDONE
+	p.type = REMOTEUI_PARAM_BOOL; // GSFDONE
 	p.boolValAddr = param;
 	p.boolVal = *param;
 	p.group = upcomingGroup;
@@ -2336,7 +2405,7 @@ void ofxRemoteUIServer::shareParam(string paramName, std::function<bool()> gette
 
 void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int max, ofColor c) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_INT;
+	p.type = REMOTEUI_PARAM_INT; // GSIDONE
 	p.intValAddr = param;
 	p.maxInt = max;
 	p.minInt = min;
@@ -2346,6 +2415,22 @@ void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int ma
 	addParamToDB(p, paramName);
 	if (verbose_)
 		RLOG_NOTICE << "Sharing Int Param '" << paramName << "'";
+}
+
+void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, ofColor c) {
+	RemoteUIParam p;
+	p.type = REMOTEUI_PARAM_INT; // GSIDONE
+	p.intValAddr = nullptr;
+	p.intGetter = getter;
+	p.intSetter = setter;
+	p.maxInt = max;
+	p.minInt = min;
+	p.group = upcomingGroup;
+	setColorForParam(p, c);
+	p.intVal = ofClamp(getter(), min, max);
+	addParamToDB(p, paramName);
+	if (verbose_)
+		RLOG_NOTICE << "Sharing Getter / Setter Int Param '" << paramName << "'";
 }
 
 void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names,
@@ -2406,9 +2491,24 @@ void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int ma
 		RLOG_NOTICE << "Sharing Enum Param '" << paramName << "'";
 }
 
+void ofxRemoteUIServer::shareParam(string paramName, std::function<std::string()> getter, std::function<void(std::string)> setter, ofColor c, int) {
+	RemoteUIParam p;
+	p.type = REMOTEUI_PARAM_STRING; // GSSDONE
+	p.stringValAddr = nullptr;
+	p.stringVal = getter();
+	p.stringGetter = getter;
+	p.stringSetter = setter;
+	p.group = upcomingGroup;
+	setColorForParam(p, c);
+	addParamToDB(p, paramName);
+	if (verbose_) {
+		RLOG_NOTICE << "Sharing String Getter / Setter Param '" << paramName << "'";
+	}
+}
+
 void ofxRemoteUIServer::shareParam(string paramName, string *param, ofColor c, int nothingUseful) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_STRING;
+	p.type = REMOTEUI_PARAM_STRING; // GSSDONE
 	p.stringValAddr = param;
 	p.stringVal = *param;
 	p.group = upcomingGroup;
@@ -2418,9 +2518,28 @@ void ofxRemoteUIServer::shareParam(string paramName, string *param, ofColor c, i
 		RLOG_NOTICE << "Sharing String Param '" << paramName << "'";
 }
 
+void ofxRemoteUIServer::shareParam(string paramName, std::function<ofColor()> getter, std::function<void(ofColor)> setter, ofColor bgColor, int nothing) {
+	RemoteUIParam p;
+	p.type = REMOTEUI_PARAM_COLOR; // GSCDONE
+	p.redValAddr = nullptr;
+	ofColor c = getter();
+	p.colorGetter = getter;
+	p.colorSetter = setter;
+	p.redVal = c.r;
+	p.greenVal = c.g;
+	p.blueVal = c.b;
+	p.alphaVal = c.a;
+	p.group = upcomingGroup;
+	setColorForParam(p, bgColor);
+	addParamToDB(p, paramName);
+	if (verbose_) {
+		RLOG_NOTICE << "Sharing Color Getter / Setter Param '" << paramName << "'";
+	}
+}
+
 void ofxRemoteUIServer::shareParam(string paramName, unsigned char *param, ofColor bgColor, int nothingUseful) {
 	RemoteUIParam p;
-	p.type = REMOTEUI_PARAM_COLOR;
+	p.type = REMOTEUI_PARAM_COLOR; // GSCDONE
 	p.redValAddr = param;
 	p.redVal = param[0];
 	p.greenVal = param[1];

@@ -128,8 +128,15 @@ struct DecodedMessage {
 
 #ifndef OF_AVAILABLE // if OF is not available, redefine ofColor to myColor
 //#warning "Openframeworks is not available!"
-#define ofColor myColor
 
+#ifdef CINDER_AVAILABLE // if cinder available, define an easy port to cinderColor
+// cinder can use c::ColorA8u moe or less interchangeably
+#define ofColor ci::ColorA8u
+
+#else
+// the framework-less have to redefine
+
+#define ofColor myColor
 struct myColor {
 	myColor() {
 	}
@@ -155,23 +162,8 @@ struct myColor {
 		};
 		unsigned char v[4];
 	};
-#ifdef CINDER_AVAILABLE // if cinder available, define an easy port to cinderColor
-	//#warning "Compiling for Cinder!"
-
-	// Construct color from cinder color
-	myColor(ci::ColorA8u color) {
-		r = color.r;
-		g = color.g;
-		b = color.b;
-		a = color.a;
-	}
-
-	// TODO more of these?
-	ci::ColorA8u toCinder() {
-		return ci::ColorA8u(r, g, b, a);
-	}
-#endif
 };
+#endif
 #endif
 
 class RemoteUIParam { // I am lazy and I know it
@@ -179,11 +171,11 @@ class RemoteUIParam { // I am lazy and I know it
 public:
 	RemoteUIParam() {
 		type = REMOTEUI_PARAM_UNKNOWN;
-		floatValAddr = NULL;
-		intValAddr = NULL;
-		boolValAddr = NULL;
-		stringValAddr = NULL;
-		redValAddr = NULL;
+		floatValAddr = nullptr;
+		intValAddr = nullptr;
+		boolValAddr = nullptr;
+		stringValAddr = nullptr;
+		redValAddr = nullptr;
 		floatVal = minFloat = maxFloat = 0;
 		intVal = minInt = maxInt = 0;
 		redVal = greenVal = blueVal = alphaVal = 0;
@@ -191,6 +183,14 @@ public:
 		stringVal = "empty";
 		floatGetter = nullptr;
 		floatSetter = nullptr;
+		boolGetter = nullptr;
+		boolSetter = nullptr;
+		intGetter = nullptr;
+		intSetter = nullptr;
+		colorGetter = nullptr;
+		colorSetter = nullptr;
+		stringSetter = nullptr;
+		stringGetter = nullptr;
 
 		r = g = b = a = 0; // bg color
 		group = OFXREMOTEUI_DEFAULT_PARAM_GROUP;
@@ -205,11 +205,15 @@ public:
 				return (boolGetter != nullptr) && (boolSetter != nullptr);
 				break;
 			case REMOTEUI_PARAM_ENUM: // GSEDONE
+			case REMOTEUI_PARAM_INT:	// GSIDONE
 				return (intGetter != nullptr) && (intSetter != nullptr);
 				break;
-			case REMOTEUI_PARAM_INT:
-			case REMOTEUI_PARAM_STRING:
-			case REMOTEUI_PARAM_COLOR:
+			case REMOTEUI_PARAM_COLOR: // GSCDONE
+				return (colorGetter != nullptr) && (colorSetter != nullptr);
+				break;
+			case REMOTEUI_PARAM_STRING: // GSSDONE
+				return (stringSetter != nullptr) && (stringSetter != nullptr);
+				break;
 			case REMOTEUI_PARAM_SPACER:
 				return false;
 				break;
@@ -223,34 +227,21 @@ public:
 	bool isEqualTo(RemoteUIParam &p) {
 		bool equal = true;
 		switch (type) {
-			case REMOTEUI_PARAM_FLOAT: // GSDONE
-				if (p.floatVal != floatVal)
-					equal = false;
-				if (p.minFloat != minFloat)
-					equal = false;
-				if (p.maxFloat != maxFloat)
-					equal = false;
+			case REMOTEUI_PARAM_FLOAT: // GSFDONE
+				equal = (p.floatVal == floatVal) && (p.minFloat == minFloat) && (p.maxFloat == maxFloat);
 				break;
-			case REMOTEUI_PARAM_ENUM: // GSBDONE
-			case REMOTEUI_PARAM_INT:
-				if (p.intVal != intVal)
-					equal = false;
-				if (p.minInt != minInt)
-					equal = false;
-				if (p.maxInt != maxInt)
-					equal = false;
+			case REMOTEUI_PARAM_ENUM: // GSEDONE
+			case REMOTEUI_PARAM_INT:	// GSIDONE
+				equal = (p.intVal == intVal) && (p.minInt == minInt) && (p.maxInt == maxInt);
 				break;
-			case REMOTEUI_PARAM_BOOL: // GSDONE
-				if (p.boolVal != boolVal)
-					equal = false;
+			case REMOTEUI_PARAM_BOOL: // GSBDONE
+				equal = (p.boolVal == boolVal);
 				break;
-			case REMOTEUI_PARAM_STRING:
-				if (p.stringVal != stringVal)
-					equal = false;
+			case REMOTEUI_PARAM_STRING: // GSSDONE
+				equal = (p.stringVal == stringVal);
 				break;
-			case REMOTEUI_PARAM_COLOR:
-				if (p.redVal != redVal || p.greenVal != greenVal || p.blueVal != blueVal || p.alphaVal != alphaVal)
-					equal = false;
+			case REMOTEUI_PARAM_COLOR: // GSCDONE
+				equal = (p.redVal == redVal) && (p.greenVal == greenVal) && (p.blueVal == blueVal) && (p.alphaVal == alphaVal);
 				break;
 			case REMOTEUI_PARAM_SPACER:
 				equal = false;
@@ -267,7 +258,7 @@ public:
 		std::ostringstream ss;
 		char aux[50];
 		switch (type) {
-			case REMOTEUI_PARAM_FLOAT: // GSDONE
+			case REMOTEUI_PARAM_FLOAT: // GSFDONE
 				ss << floatVal;
 				return ss.str();
 			case REMOTEUI_PARAM_ENUM: // GSBDONE
@@ -276,14 +267,14 @@ public:
 				else
 					ss << "Invalid Enum!";
 				return ss.str();
-			case REMOTEUI_PARAM_INT:
+			case REMOTEUI_PARAM_INT: // GSIDONE
 				ss << intVal;
 				return ss.str();
-			case REMOTEUI_PARAM_BOOL: // GSDONE
+			case REMOTEUI_PARAM_BOOL: // GBSDONE
 				return boolVal ? "TRUE" : "FALSE";
-			case REMOTEUI_PARAM_STRING:
+			case REMOTEUI_PARAM_STRING: // GSSDONE
 				return stringVal;
-			case REMOTEUI_PARAM_COLOR: {
+			case REMOTEUI_PARAM_COLOR: { // GSCDONE
 				sprintf(aux, "RGBA: [%d, %d, %d, %d]", redVal, greenVal, blueVal, alphaVal);
 				return string(aux);
 			}
@@ -298,7 +289,7 @@ public:
 		std::ostringstream ss;
 		char aux[50];
 		switch (type) {
-			case REMOTEUI_PARAM_FLOAT: // GSDONE
+			case REMOTEUI_PARAM_FLOAT: // GSFDONE
 				if (isUsingGetterSetter()) {
 					ss << floatGetter();
 				} else {
@@ -320,10 +311,17 @@ public:
 				}
 				return ss.str();
 			}
-			case REMOTEUI_PARAM_INT:
-				ss << *intValAddr;
+			case REMOTEUI_PARAM_INT: // GSIDONE
+				int v;
+				if (isUsingGetterSetter()) {
+					v = intGetter();
+				} else {
+					v = *intValAddr;
+				}
+
+				ss << v;
 				return ss.str();
-			case REMOTEUI_PARAM_BOOL: { // GSDONE
+			case REMOTEUI_PARAM_BOOL: { // GSBDONE
 				bool v;
 				if (isUsingGetterSetter()) {
 					v = floatGetter();
@@ -332,10 +330,19 @@ public:
 				}
 				return v ? "TRUE" : "FALSE";
 			}
-			case REMOTEUI_PARAM_STRING:
-				return *stringValAddr;
-			case REMOTEUI_PARAM_COLOR: {
-				sprintf(aux, "RGBA: [%d, %d, %d, %d]", redValAddr[0], redValAddr[1], redValAddr[2], redValAddr[3]);
+			case REMOTEUI_PARAM_STRING: // GSSDONE
+				if (isUsingGetterSetter()) {
+					return stringGetter();
+				} else {
+					return *stringValAddr;
+				}
+			case REMOTEUI_PARAM_COLOR: { // GSCDONE
+				if (isUsingGetterSetter()) {
+					ofColor c = colorGetter();
+					sprintf(aux, "RGBA: [%d, %d, %d, %d]", c.r, c.g, c.b, c.a);
+				} else {
+					sprintf(aux, "RGBA: [%d, %d, %d, %d]", redValAddr[0], redValAddr[1], redValAddr[2], redValAddr[3]);
+				}
 				return string(aux);
 			}
 			case REMOTEUI_PARAM_SPACER:
@@ -347,13 +354,13 @@ public:
 
 	void print() {
 		switch (type) {
-			case REMOTEUI_PARAM_FLOAT: // GSDONE
+			case REMOTEUI_PARAM_FLOAT: // GSFDONE
 				printf("float: %.2f [%.2f, %.2f]\n", floatVal, minFloat, maxFloat);
 				break;
-			case REMOTEUI_PARAM_INT:
+			case REMOTEUI_PARAM_INT: // GSIDONE
 				printf("int: %d [%d, %d]\n", intVal, minInt, maxInt);
 				break;
-			case REMOTEUI_PARAM_COLOR:
+			case REMOTEUI_PARAM_COLOR: // GSCDONE
 				printf("color: RGBA(%d %d %d %d)\n", redVal, greenVal, blueVal, alphaVal);
 				break;
 			case REMOTEUI_PARAM_ENUM: // GSEDONE
@@ -362,7 +369,7 @@ public:
 			case REMOTEUI_PARAM_BOOL: // GSBDONE
 				printf("bool: %s\n", boolVal ? "TRUE" : "FALSE");
 				break;
-			case REMOTEUI_PARAM_STRING:
+			case REMOTEUI_PARAM_STRING: // GSSDONE
 				printf("string: %s\n", stringVal.c_str());
 				break;
 			case REMOTEUI_PARAM_SPACER:
@@ -387,6 +394,11 @@ public:
 	float floatVal;			 // used in client
 	float minFloat;
 	float maxFloat;
+
+	std::function<std::string()> stringGetter;
+	std::function<void(std::string)> stringSetter;
+	std::function<ofColor()> colorGetter;
+	std::function<void(ofColor)> colorSetter;
 	std::function<float()> floatGetter;
 	std::function<void(float)> floatSetter;
 	std::function<bool()> boolGetter;

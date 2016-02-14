@@ -79,7 +79,8 @@ public:
 	// TODO templates?
 	void shareParam(string paramName, float *param, float min, float max, ofColor bgColor = ofColor(0, 0, 0, 0));
 	void shareParam(string paramName, bool *param, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0); //"nothing" args are just to match other methods
-	void shareParam(string paramName, int *param, int min, int max, ofColor bgColor = ofColor(0, 0, 0, 0));
+	void shareParam(string paramName, int *param, int min, int max, ofColor bgColor = ofColor(0, 0, 0, 0)); // int
+
 	void shareParam(string paramName, string *param, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0); //"nothing" args are just to match other methods
 	void shareParam(string paramName, int *param, int min, int max, vector<string> names, ofColor c = ofColor(0, 0, 0, 0)); // enum!
 	void shareParam(string paramName, int *param, int min, int max, string *names, ofColor c = ofColor(0, 0, 0, 0));				// enum with old school string array
@@ -87,9 +88,15 @@ public:
 
 	void shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max, ofColor c = ofColor(0, 0, 0, 0));
 	void shareParam(string paramName, std::function<bool()> getter, std::function<void(bool)> setter, ofColor c = ofColor(0, 0, 0, 0));
+	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, ofColor c); // int
 	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names,
 									ofColor c = ofColor(0, 0, 0, 0)); // enum
+	void shareParam(string paramName, std::function<std::string()> getter, std::function<void(std::string)> setter, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0);
 
+	void shareParam(string paramName, std::function<ofColor()> getter, std::function<void(ofColor)> setter, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0);				// ofColor
+	
+	
+	
 	void addSpacer(string name);
 
 	void setParamGroup(string g); // set for all the upcoming params

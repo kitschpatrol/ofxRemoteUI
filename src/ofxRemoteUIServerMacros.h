@@ -55,6 +55,9 @@ inline std::string className(const std::string &prettyFunction) {
 
 #ifdef CINDER_AVAILABLE
 
+//#define OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_COLOR_PARAM(color, ...) (ofxRemoteUIServer::instance()->shareParam(#color, (unsigned char *)&color[0],
+//##__VA_ARGS__))
+
 // use this macro to share cinder colors... doesn't need to go through .v
 #define OFX_REMOTEUI_SERVER_SHARE_COLOR_PARAM(color, ...) (ofxRemoteUIServer::instance()->shareParam(#color, (unsigned char *)&color[0], ##__VA_ARGS__))
 

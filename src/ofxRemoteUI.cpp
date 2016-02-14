@@ -326,7 +326,7 @@ void ofxRemoteUI::updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage 
 
 	switch (dm.argument) {
 		case FLT_ARG:
-			p.type = REMOTEUI_PARAM_FLOAT; // GSDONE
+			p.type = REMOTEUI_PARAM_FLOAT; // GSFDONE
 			p.floatVal = m.getArgAsFloat(arg);
 			arg++;
 			if (m.getNumArgs() > 1) {
@@ -344,20 +344,23 @@ void ofxRemoteUI::updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage 
 			break;
 
 		case INT_ARG:
-			p.type = REMOTEUI_PARAM_INT;
+			p.type = REMOTEUI_PARAM_INT; // GSIDONE
 			p.intVal = m.getArgAsInt32(arg);
 			arg++;
 			p.minInt = m.getArgAsInt32(arg);
 			arg++;
 			p.maxInt = m.getArgAsInt32(arg);
 			arg++;
-			if (p.intValAddr) {
+
+			if (p.isUsingGetterSetter()) {
+				p.intSetter(p.intVal);
+			} else if (p.intValAddr) {
 				*p.intValAddr = p.intVal;
 			}
 			break;
 
 		case COLOR_ARG:
-			p.type = REMOTEUI_PARAM_COLOR;
+			p.type = REMOTEUI_PARAM_COLOR; // GSCDONE
 			p.redVal = (int)m.getArgAsInt32(arg);
 			arg++;
 			p.greenVal = (int)m.getArgAsInt32(arg);
@@ -366,7 +369,10 @@ void ofxRemoteUI::updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage 
 			arg++;
 			p.alphaVal = (int)m.getArgAsInt32(arg);
 			arg++;
-			if (p.redValAddr) {
+
+			if (p.isUsingGetterSetter()) {
+				p.colorSetter(ofColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal));
+			} else if (p.redValAddr) {
 				*p.redValAddr = p.redVal;
 				*(p.redValAddr + 1) = p.greenVal;
 				*(p.redValAddr + 2) = p.blueVal;
@@ -410,10 +416,13 @@ void ofxRemoteUI::updateParamFromDecodedMessage(ofxOscMessage m, DecodedMessage 
 			break;
 
 		case STR_ARG:
-			p.type = REMOTEUI_PARAM_STRING;
+			p.type = REMOTEUI_PARAM_STRING; // GSSDONE
 			p.stringVal = m.getArgAsString(arg);
 			arg++;
-			if (p.stringValAddr) {
+
+			if (p.isUsingGetterSetter()) {
+				p.stringSetter(p.stringVal);
+			} else if (p.stringValAddr) {
 				*p.stringValAddr = p.stringVal;
 			}
 			break;
@@ -518,7 +527,7 @@ void ofxRemoteUI::syncPointerToParam(string paramName) {
 	RemoteUIParam p = params[paramName];
 
 	switch (p.type) {
-		case REMOTEUI_PARAM_FLOAT: // GSDONE
+		case REMOTEUI_PARAM_FLOAT: // GSFDONE
 			if (p.isUsingGetterSetter()) {
 				p.floatSetter(p.floatVal);
 			} else if (p.floatValAddr) {
@@ -527,7 +536,7 @@ void ofxRemoteUI::syncPointerToParam(string paramName) {
 			break;
 
 		case REMOTEUI_PARAM_ENUM: // GSEDONE
-		case REMOTEUI_PARAM_INT:
+		case REMOTEUI_PARAM_INT:	// GSIDONE
 			if (p.isUsingGetterSetter()) {
 				p.intSetter(p.intVal);
 			} else if (p.intValAddr) {
@@ -535,8 +544,10 @@ void ofxRemoteUI::syncPointerToParam(string paramName) {
 			}
 			break;
 
-		case REMOTEUI_PARAM_COLOR:
-			if (p.redValAddr) {
+		case REMOTEUI_PARAM_COLOR: // GSCDONE
+			if (p.isUsingGetterSetter()) {
+				p.colorSetter(ofColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal));
+			} else if (p.redValAddr) {
 				*p.redValAddr = p.redVal;
 				*(p.redValAddr + 1) = p.greenVal;
 				*(p.redValAddr + 2) = p.blueVal;
@@ -553,8 +564,10 @@ void ofxRemoteUI::syncPointerToParam(string paramName) {
 			break;
 
 		case REMOTEUI_PARAM_SPACER:
-		case REMOTEUI_PARAM_STRING:
-			if (p.stringValAddr) {
+		case REMOTEUI_PARAM_STRING: // GSSDONE
+			if (p.isUsingGetterSetter()) {
+				p.stringSetter(p.stringVal);
+			} else if (p.stringValAddr) {
 				*p.stringValAddr = p.stringVal;
 			}
 			break;
@@ -570,7 +583,7 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 	RemoteUIParam p = params[paramName];
 
 	switch (p.type) {
-		case REMOTEUI_PARAM_FLOAT: // GSDONE
+		case REMOTEUI_PARAM_FLOAT: // GSFDONE
 			if (p.isUsingGetterSetter()) {
 				p.floatVal = p.floatGetter();
 			} else if (p.floatValAddr) {
@@ -579,7 +592,7 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 			break;
 
 		case REMOTEUI_PARAM_ENUM: // GSEDONE
-		case REMOTEUI_PARAM_INT:
+		case REMOTEUI_PARAM_INT:	// GSIDONE
 			if (p.isUsingGetterSetter()) {
 				p.intVal = p.intGetter();
 			} else if (p.intValAddr) {
@@ -587,8 +600,14 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 			}
 			break;
 
-		case REMOTEUI_PARAM_COLOR:
-			if (p.redValAddr) {
+		case REMOTEUI_PARAM_COLOR: // GSCDONE
+			if (p.isUsingGetterSetter()) {
+				ofColor c = p.colorGetter();
+				p.redVal = c.r;
+				p.greenVal = c.g;
+				p.blueVal = c.b;
+				p.alphaVal = c.a;
+			} else if (p.redValAddr) {
 				p.redVal = *p.redValAddr;
 				p.greenVal = *(p.redValAddr + 1);
 				p.blueVal = *(p.redValAddr + 2);
@@ -605,8 +624,10 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 			break;
 
 		case REMOTEUI_PARAM_SPACER:
-		case REMOTEUI_PARAM_STRING:
-			if (p.stringValAddr) {
+		case REMOTEUI_PARAM_STRING: // GSSDONE
+			if (p.isUsingGetterSetter()) {
+				p.stringVal = p.stringGetter();
+			} else if (p.stringValAddr) {
 				p.stringVal = *p.stringValAddr;
 			}
 			break;
@@ -619,7 +640,7 @@ void ofxRemoteUI::syncParamToPointer(string paramName) {
 
 bool ofxRemoteUI::hasParamChanged(RemoteUIParam p) {
 	switch (p.type) {
-		case REMOTEUI_PARAM_FLOAT: // GSDONE
+		case REMOTEUI_PARAM_FLOAT: // GSFDONE
 			if (p.isUsingGetterSetter()) {
 				return (p.floatVal != p.floatGetter());
 			} else if (p.floatValAddr) {
@@ -628,7 +649,7 @@ bool ofxRemoteUI::hasParamChanged(RemoteUIParam p) {
 			return false;
 
 		case REMOTEUI_PARAM_ENUM: // GSEDONE
-		case REMOTEUI_PARAM_INT:
+		case REMOTEUI_PARAM_INT:	// GSIDONE
 			if (p.isUsingGetterSetter()) {
 				return (p.intVal != p.intGetter());
 			} else if (p.intValAddr) {
@@ -636,8 +657,11 @@ bool ofxRemoteUI::hasParamChanged(RemoteUIParam p) {
 			}
 			return false;
 
-		case REMOTEUI_PARAM_COLOR:
-			if (p.redValAddr) {
+		case REMOTEUI_PARAM_COLOR: // GSCDONE
+			if (p.isUsingGetterSetter()) {
+				ofColor c = p.colorGetter();
+				return (c.r != p.redVal || c.g != p.greenVal || c.b != p.blueVal || c.a != p.alphaVal);
+			} else if (p.redValAddr) {
 				return (*p.redValAddr != p.redVal || *(p.redValAddr + 1) != p.greenVal || *(p.redValAddr + 2) != p.blueVal || *(p.redValAddr + 3) != p.alphaVal);
 			}
 			return false;
@@ -650,8 +674,10 @@ bool ofxRemoteUI::hasParamChanged(RemoteUIParam p) {
 			}
 			return false;
 
-		case REMOTEUI_PARAM_STRING:
-			if (p.stringValAddr) {
+		case REMOTEUI_PARAM_STRING: // GSSDONE
+			if (p.isUsingGetterSetter()) {
+				return (p.stringGetter() != p.stringVal);
+			} else if (p.stringValAddr) {
 				return (*p.stringValAddr != p.stringVal);
 			}
 			return false;
@@ -666,17 +692,17 @@ bool ofxRemoteUI::hasParamChanged(RemoteUIParam p) {
 
 string ofxRemoteUI::stringForParamType(RemoteUIParamType t) {
 	switch (t) {
-		case REMOTEUI_PARAM_FLOAT: // GSDONE
+		case REMOTEUI_PARAM_FLOAT: // GSFDONE
 			return "FLT";
-		case REMOTEUI_PARAM_INT:
+		case REMOTEUI_PARAM_INT: // GSIDONE
 			return "INT";
-		case REMOTEUI_PARAM_COLOR:
+		case REMOTEUI_PARAM_COLOR: // GSCDONE
 			return "COL";
 		case REMOTEUI_PARAM_ENUM: // GSEDONE
 			return "ENU";
 		case REMOTEUI_PARAM_BOOL: // GSBDONE
 			return "BOL";
-		case REMOTEUI_PARAM_STRING:
+		case REMOTEUI_PARAM_STRING: // GSSDONE
 			return "STR";
 		case REMOTEUI_PARAM_SPACER:
 			return "SPA";
@@ -723,13 +749,13 @@ string ofxRemoteUI::getValuesAsString() {
 			out << UriEncode(it->second) << "=";
 		}
 		switch (param.type) {
-			case REMOTEUI_PARAM_FLOAT: // GSDONE
+			case REMOTEUI_PARAM_FLOAT: // GSFDONE
 				out << param.floatVal << endl;
 				break;
-			case REMOTEUI_PARAM_INT:
+			case REMOTEUI_PARAM_INT: // GSIDONE
 				out << param.intVal << endl;
 				break;
-			case REMOTEUI_PARAM_COLOR:
+			case REMOTEUI_PARAM_COLOR: // GSCDONE
 				out << (int)param.redVal << " " << (int)param.greenVal << " " << (int)param.blueVal << " " << (int)param.alphaVal << " " << endl;
 				break;
 			case REMOTEUI_PARAM_ENUM: // GSEDONE
@@ -738,7 +764,7 @@ string ofxRemoteUI::getValuesAsString() {
 			case REMOTEUI_PARAM_BOOL: // GSBDONE
 				out << (param.boolVal ? "1" : "0") << endl;
 				break;
-			case REMOTEUI_PARAM_STRING:
+			case REMOTEUI_PARAM_STRING: // GSSDONE
 				out << UriEncode(param.stringVal) << endl;
 				break;
 			case REMOTEUI_PARAM_SPACER:
@@ -768,13 +794,13 @@ void ofxRemoteUI::setValuesFromString(string values) {
 			stringstream valstr(UriDecode(value));
 
 			switch (param.type) {
-				case REMOTEUI_PARAM_FLOAT: // GSDONE
+				case REMOTEUI_PARAM_FLOAT: // GSFDONE
 					valstr >> param.floatVal;
 					break;
-				case REMOTEUI_PARAM_INT:
+				case REMOTEUI_PARAM_INT: // GSIDONE
 					valstr >> param.intVal;
 					break;
-				case REMOTEUI_PARAM_COLOR: {
+				case REMOTEUI_PARAM_COLOR: { // GSCDONE
 					std::istringstream ss(UriDecode(value));
 					std::string token;
 					std::getline(ss, token, ' ');
@@ -826,17 +852,17 @@ void ofxRemoteUI::sendParam(string paramName, RemoteUIParam p) {
 	// if(verbose_){ ofLogVerbose("sending >> %s ", paramName.c_str()); p.print(); }
 	m.setAddress("/SEND " + stringForParamType(p.type) + " " + paramName);
 	switch (p.type) {
-		case REMOTEUI_PARAM_FLOAT: // GSDONE
+		case REMOTEUI_PARAM_FLOAT: // GSFDONE
 			m.addFloatArg(p.floatVal);
 			m.addFloatArg(p.minFloat);
 			m.addFloatArg(p.maxFloat);
 			break;
-		case REMOTEUI_PARAM_INT:
+		case REMOTEUI_PARAM_INT: // GSIDONE
 			m.addIntArg(p.intVal);
 			m.addIntArg(p.minInt);
 			m.addIntArg(p.maxInt);
 			break;
-		case REMOTEUI_PARAM_COLOR:
+		case REMOTEUI_PARAM_COLOR: // GSCDONE
 			m.addIntArg(p.redVal);
 			m.addIntArg(p.greenVal);
 			m.addIntArg(p.blueVal);
