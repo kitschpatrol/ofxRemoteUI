@@ -2651,18 +2651,25 @@ vector<string> ofxRemoteUIServer::loadFromXMLv1(string fileName) {
 					unordered_map<string, RemoteUIParam>::iterator it = params.find(paramName);
 					if (it != params.end()) { // found!
 						loadedParams.push_back(paramName);
-						if (params[paramName].floatValAddr != NULL) {
-							*params[paramName].floatValAddr = val;
-							params[paramName].floatVal = val;
-							*params[paramName].floatValAddr = ofClamp(*params[paramName].floatValAddr, params[paramName].minFloat, params[paramName].maxFloat);
-							if (!paramsLoadedFromXML[paramName]) {
-								paramsFromXML[paramName] = params[paramName];
-								paramsLoadedFromXML[paramName] = true;
-							}
-							if (verbose_)
-								RLOG_VERBOSE << "loading a FLOAT '" << paramName << "' (" << ofToString(*params[paramName].floatValAddr, 3) << ") from XML";
+						float clampedVal = ofClamp(val, params[paramName].minFloat, params[paramName].maxFloat);
+
+						if (verbose_) {
+							RLOG_VERBOSE << "loading a FLOAT '" << paramName << "' (" << ofToString(clampedVal, 3) << ") from XML";
+						}
+
+						// GSFDONE
+						if (params[paramName].isUsingGetterSetter()) {
+							params[paramName].floatSetter(clampedVal);
+						} else if (params[paramName].floatValAddr) {
+							*params[paramName].floatValAddr = clampedVal;
 						} else {
 							RLOG_ERROR << "ERROR at loading FLOAT (" << paramName << ")";
+						}
+						params[paramName].floatVal = clampedVal;
+
+						if (!paramsLoadedFromXML[paramName]) {
+							paramsFromXML[paramName] = params[paramName];
+							paramsLoadedFromXML[paramName] = true;
 						}
 					} else {
 						RLOG_ERROR << "float param '" << paramName << "' defined in xml not found in DB!";
@@ -2677,22 +2684,30 @@ vector<string> ofxRemoteUIServer::loadFromXMLv1(string fileName) {
 				string paramName = s.getAttribute(OFXREMOTEUI_INT_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, OFXREMOTEUI_UNKNOWN_PARAM_NAME_XML_KEY, i);
 				if (readKeys.find(paramName) == readKeys.end()) {
 					readKeys[paramName] = true;
-					float val = s.getValue(OFXREMOTEUI_INT_PARAM_XML_TAG, 0, i);
+					int val = s.getValue(OFXREMOTEUI_INT_PARAM_XML_TAG, 0, i);
 					unordered_map<string, RemoteUIParam>::iterator it = params.find(paramName);
 					if (it != params.end()) { // found!
 						loadedParams.push_back(paramName);
-						if (params[paramName].intValAddr != NULL) {
-							*params[paramName].intValAddr = val;
-							params[paramName].intVal = val;
-							*params[paramName].intValAddr = ofClamp(*params[paramName].intValAddr, params[paramName].minInt, params[paramName].maxInt);
-							if (!paramsLoadedFromXML[paramName]) {
-								paramsFromXML[paramName] = params[paramName];
-								paramsLoadedFromXML[paramName] = true;
-							}
-							if (verbose_)
-								RLOG_VERBOSE << "loading an INT '" << paramName << "' (" << (int)*params[paramName].intValAddr << ") from XML";
+						int clampedVal = ofClamp(val, params[paramName].minInt, params[paramName].maxInt);
+
+						if (verbose_) {
+							RLOG_VERBOSE << "loading an INT '" << paramName << "' (" << (int)clampedVal << ") from XML";
+						}
+
+						// GSIDONE
+						if (params[paramName].isUsingGetterSetter()) {
+							params[paramName].intSetter(clampedVal);
+						} else if (params[paramName].intValAddr != NULL) {
+							*params[paramName].intValAddr = clampedVal;
 						} else {
 							RLOG_ERROR << "ERROR at loading INT (" << paramName << ")";
+						}
+
+						params[paramName].intVal = clampedVal;
+
+						if (!paramsLoadedFromXML[paramName]) {
+							paramsFromXML[paramName] = params[paramName];
+							paramsLoadedFromXML[paramName] = true;
 						}
 					} else {
 						RLOG_ERROR << "int param '" << paramName << "' defined in xml not found in DB!";
@@ -2715,26 +2730,34 @@ vector<string> ofxRemoteUIServer::loadFromXMLv1(string fileName) {
 					unordered_map<string, RemoteUIParam>::iterator it = params.find(paramName);
 					if (it != params.end()) { // found!
 						loadedParams.push_back(paramName);
-						if (params[paramName].redValAddr != NULL) {
+
+						// GSCDONE
+						if (params[paramName].isUsingGetterSetter()) {
+							ofColor c = ofColor(r, g, b, a);
+							params[paramName].colorSetter(c);
+						} else if (params[paramName].redValAddr != NULL) {
 							*params[paramName].redValAddr = r;
-							params[paramName].redVal = r;
 							*(params[paramName].redValAddr + 1) = g;
-							params[paramName].greenVal = g;
 							*(params[paramName].redValAddr + 2) = b;
-							params[paramName].blueVal = b;
 							*(params[paramName].redValAddr + 3) = a;
-							params[paramName].alphaVal = a;
-							if (!paramsLoadedFromXML[paramName]) {
-								paramsFromXML[paramName] = params[paramName];
-								paramsLoadedFromXML[paramName] = true;
-							}
-							if (verbose_)
-								RLOG_VERBOSE << "loading a COLOR '" << paramName << "' (" << (int)*params[paramName].redValAddr << " "
-														 << (int)*(params[paramName].redValAddr + 1) << " " << (int)*(params[paramName].redValAddr + 2) << " "
-														 << (int)*(params[paramName].redValAddr + 3) << ") from XML";
 						} else {
 							RLOG_ERROR << "ERROR at loading COLOR (" << paramName << ")";
 						}
+
+						params[paramName].redVal = r;
+						params[paramName].greenVal = g;
+						params[paramName].blueVal = b;
+						params[paramName].alphaVal = a;
+
+						if (!paramsLoadedFromXML[paramName]) {
+							paramsFromXML[paramName] = params[paramName];
+							paramsLoadedFromXML[paramName] = true;
+						}
+
+						if (verbose_) {
+							RLOG_VERBOSE << "loading a COLOR '" << paramName << "' (" << (int)r << " " << (int)g << " " << (int)b << " " << (int)a << ") from XML";
+						}
+
 					} else {
 						RLOG_WARNING << "color param '" << paramName << "' defined in xml not found in DB!";
 					}
@@ -2753,19 +2776,28 @@ vector<string> ofxRemoteUIServer::loadFromXMLv1(string fileName) {
 					unordered_map<string, RemoteUIParam>::iterator it = params.find(paramName);
 					if (it != params.end()) { // found!
 						loadedParams.push_back(paramName);
-						if (params[paramName].intValAddr != NULL) {
-							*params[paramName].intValAddr = val;
-							params[paramName].intVal = val;
-							*params[paramName].intValAddr = ofClamp(*params[paramName].intValAddr, params[paramName].minInt, params[paramName].maxInt);
-							if (!paramsLoadedFromXML[paramName]) {
-								paramsFromXML[paramName] = params[paramName];
-								paramsLoadedFromXML[paramName] = true;
-							}
-							if (verbose_)
-								RLOG_VERBOSE << "loading an ENUM '" << paramName << "' (" << (int)*params[paramName].intValAddr << ") from XML";
+						int clampedVal = ofClamp(val, params[paramName].minInt, params[paramName].maxInt);
+
+						if (verbose_) {
+							RLOG_VERBOSE << "loading an ENUM '" << paramName << "' (" << (int)clampedVal << ") from XML";
+						}
+
+						// GSEDONE
+						if (params[paramName].isUsingGetterSetter()) {
+							params[paramName].intSetter(clampedVal);
+						} else if (params[paramName].intValAddr != NULL) {
+							*params[paramName].intValAddr = clampedVal;
 						} else {
 							RLOG_ERROR << "ERROR at loading ENUM (" << paramName << ")";
 						}
+
+						params[paramName].intVal = clampedVal;
+
+						if (!paramsLoadedFromXML[paramName]) {
+							paramsFromXML[paramName] = params[paramName];
+							paramsLoadedFromXML[paramName] = true;
+						}
+
 					} else {
 						RLOG_WARNING << "enum param '" << paramName << "' defined in xml not found in DB!";
 					}
@@ -2779,22 +2811,32 @@ vector<string> ofxRemoteUIServer::loadFromXMLv1(string fileName) {
 				string paramName = s.getAttribute(OFXREMOTEUI_BOOL_PARAM_XML_TAG, OFXREMOTEUI_PARAM_NAME_XML_KEY, OFXREMOTEUI_UNKNOWN_PARAM_NAME_XML_KEY, i);
 				if (readKeys.find(paramName) == readKeys.end()) {
 					readKeys[paramName] = true;
-					float val = s.getValue(OFXREMOTEUI_BOOL_PARAM_XML_TAG, false, i);
+
+					bool val = static_cast<bool>(s.getValue(OFXREMOTEUI_BOOL_PARAM_XML_TAG, false, i));
 					unordered_map<string, RemoteUIParam>::iterator it = params.find(paramName);
 					if (it != params.end()) { // found!
 						loadedParams.push_back(paramName);
-						if (params[paramName].boolValAddr != NULL) {
+
+						// GSBDONE
+						if (params[paramName].isUsingGetterSetter()) {
+							params[paramName].boolSetter(val);
+						} else if (params[paramName].boolValAddr != NULL) {
 							*params[paramName].boolValAddr = val;
-							params[paramName].boolVal = val;
-							if (!paramsLoadedFromXML[paramName]) {
-								paramsFromXML[paramName] = params[paramName];
-								paramsLoadedFromXML[paramName] = true;
-							}
-							if (verbose_)
-								RLOG_VERBOSE << "loading a BOOL '" << paramName << "' (" << (bool)*params[paramName].boolValAddr << ") from XML";
 						} else {
 							RLOG_ERROR << "ERROR at loading BOOL (" << paramName << ")";
 						}
+
+						params[paramName].boolVal = val;
+
+						if (!paramsLoadedFromXML[paramName]) {
+							paramsFromXML[paramName] = params[paramName];
+							paramsLoadedFromXML[paramName] = true;
+						}
+
+						if (verbose_) {
+							RLOG_VERBOSE << "loading a BOOL '" << paramName << "' (" << (val ? "true" : "false") << ") from XML";
+						}
+
 					} else {
 						RLOG_WARNING << "bool param '" << paramName << "' defined in xml not found in DB!";
 					}
@@ -2812,17 +2854,27 @@ vector<string> ofxRemoteUIServer::loadFromXMLv1(string fileName) {
 					unordered_map<string, RemoteUIParam>::iterator it = params.find(paramName);
 					if (it != params.end()) { // found!
 						loadedParams.push_back(paramName);
-						if (params[paramName].stringValAddr != NULL) {
-							params[paramName].stringVal = val;
+
+						if (verbose_) {
+							RLOG_VERBOSE << "loading a STRING '" << paramName << "' (" << val << ") from XML";
+						}
+
+						// GSSDONE
+						if (params[paramName].isUsingGetterSetter()) {
+							params[paramName].stringSetter(val);
+						} else if (params[paramName].stringValAddr != NULL) {
 							*params[paramName].stringValAddr = val;
-							if (!paramsLoadedFromXML[paramName]) {
-								paramsFromXML[paramName] = params[paramName];
-								paramsLoadedFromXML[paramName] = true;
-							}
-							if (verbose_)
-								RLOG_VERBOSE << "loading a STRING '" << paramName << "' (" << (string)*params[paramName].stringValAddr << ") from XML";
-						} else
+						} else {
 							RLOG_ERROR << "ERROR at loading STRING (" << paramName << ")";
+						}
+
+						params[paramName].stringVal = val;
+
+						if (!paramsLoadedFromXML[paramName]) {
+							paramsFromXML[paramName] = params[paramName];
+							paramsLoadedFromXML[paramName] = true;
+						}
+
 					} else {
 						RLOG_WARNING << "string param '" << paramName << "' defined in xml not found in DB!";
 					}

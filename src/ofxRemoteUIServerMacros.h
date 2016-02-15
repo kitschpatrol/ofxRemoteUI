@@ -9,6 +9,24 @@
 #ifndef _ofxRemoteUIServerMacros__
 #define _ofxRemoteUIServerMacros__
 
+#include <iostream>
+#include <iterator>
+#include <regex>
+
+// small helper to clean up param names for the "quick" getter setter macro
+inline std::string prettyParamName(std::string name) {
+	// Remove function-related cruft
+	std::cmatch match;
+	std::regex_match(name.c_str(), match, std::regex("(.+)(::)(get|set)(.+)"));
+	if (match.size() > 0) {
+		name = match[match.size() - 1];
+	}
+
+	// Expand camel case
+	name = std::regex_replace(name.c_str(), std::regex("([a-z])([A-Z])"), "$1 $2");
+	return name;
+}
+
 // http://stackoverflow.com/questions/1666802/is-there-a-class-macro-in-c
 inline std::string className(const std::string &prettyFunction) {
 	size_t colons = prettyFunction.find("::");
@@ -44,6 +62,10 @@ inline std::string className(const std::string &prettyFunction) {
 
 #define OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_WCN_QUICK(pName, getter, setter, target, ...)                                                            \
 	(ofxRemoteUIServer::instance()->shareParam(pName, std::bind(getter, target), std::bind(setter, target, std::placeholders::_1), ##__VA_ARGS__))
+
+#define OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_QUICK(getter, setter, target, ...)                                                                       \
+	(ofxRemoteUIServer::instance()->shareParam(prettyParamName(#getter), std::bind(getter, target), std::bind(setter, target, std::placeholders::_1),            \
+																						 ##__VA_ARGS__))
 
 // use this macro to share enums + enumList; enum list can be vector<string> or string[]
 #define OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM(val, enumMin, enumMax, menuList, ...)                                                                             \
@@ -198,6 +220,7 @@ inline std::string className(const std::string &prettyFunction) {
 #define RUI_SHARE_GS_PARAM OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM
 #define RUI_SHARE_GS_PARAM_WCN OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_WCN
 #define RUI_SHARE_GSQ_PARAM_WCN OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_WCN_QUICK
+#define RUI_SHARE_GSQ_PARAM OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_QUICK
 
 #define RUI_NEW_GROUP OFX_REMOTEUI_SERVER_SET_UPCOMING_PARAM_GROUP
 #define RUI_NEW_COLOR OFX_REMOTEUI_SERVER_SET_NEW_COLOR
