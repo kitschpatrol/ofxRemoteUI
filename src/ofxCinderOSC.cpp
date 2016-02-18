@@ -25,8 +25,8 @@ std::string ofxOscMessage::getAddress() const {
 	return mBackingMessage.getAddress();
 }
 
-std::string ofxOscMessage::getRemoteIp() {
-	return "127.0.0.1"; // HMM TODO
+std::string ofxOscMessage::getRemoteIp() const {
+	return mBackingMessage.mSenderIpAddress.to_string();
 }
 
 int ofxOscMessage::getNumArgs() const {
@@ -62,7 +62,10 @@ void ofxOscMessage::addStringArg(std::string argument) {
 ofxOscMessage &ofxOscMessage::copy(const ofxOscMessage &other) {
 	// clear();
 	// copy address
-	this->mRemoteIP = other.mRemoteIP;
+
+
+
+
 	this->mBackingMessage = other.mBackingMessage;
 
 	//	address = other.address;
@@ -153,13 +156,20 @@ void ofxOscReceiver::setup(int listen_port) {
 			});
 
 	// TODO mRemoteIP?
+
+
 	mReceiverRef->setListener("*",																	 //
 														[&](const ci::osc::Message &message) { //
+
+
 															mMessages.push(message);						 //
 														});
 
 	mReceiverRef->bind();
 	mReceiverRef->listen();
+
+
+
 }
 
 bool ofxOscReceiver::hasWaitingMessages() {
@@ -172,6 +182,8 @@ bool ofxOscReceiver::getNextMessage(ofxOscMessage *message) {
 	} else {
 		// TODO better way to do this?
 		ofxOscMessage translatedMessage;
+
+
 		translatedMessage.mBackingMessage = mMessages.front();
 		message->copy(translatedMessage);
 		mMessages.pop();

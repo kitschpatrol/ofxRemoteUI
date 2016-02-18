@@ -67,6 +67,27 @@ inline std::string className(const std::string &prettyFunction) {
 	(ofxRemoteUIServer::instance()->shareParam(prettyParamName(#getter), std::bind(getter, target), std::bind(setter, target, std::placeholders::_1),            \
 																						 ##__VA_ARGS__))
 
+
+
+// ugh many type deduction failures...
+
+
+#define RUI_SHARE_GSQ_BOOL(getter, setter, target, ...)                                                                       \
+	(ofxRemoteUIServer::instance()->shareParam(prettyParamName(#getter), (std::function<bool()>)std::bind(getter, target), std::bind(setter, target, std::placeholders::_1),            \
+																						 ##__VA_ARGS__))
+
+
+
+#define RUI_SHARE_GSQ_FLOAT(getter, setter, target, ...)                                                                       \
+	(ofxRemoteUIServer::instance()->shareParam(prettyParamName(#getter), (std::function<float()>)std::bind(getter, target), std::bind(setter, target, std::placeholders::_1),            \
+																						 ##__VA_ARGS__))
+
+
+#define RUI_SHARE_GSQ_COLOR(getter, setter, target, ...)                                                                       \
+	(ofxRemoteUIServer::instance()->shareParam(prettyParamName(#getter), (std::function<ofColor()>)std::bind(getter, target), std::bind(setter, target, std::placeholders::_1),            \
+																						 ##__VA_ARGS__))
+
+
 // use this macro to share enums + enumList; enum list can be vector<string> or string[]
 #define OFX_REMOTEUI_SERVER_SHARE_ENUM_PARAM(val, enumMin, enumMax, menuList, ...)                                                                             \
 	(ofxRemoteUIServer::instance()->shareParam(#val, (int *)&val, enumMin, enumMax, menuList, ##__VA_ARGS__))
@@ -221,6 +242,11 @@ inline std::string className(const std::string &prettyFunction) {
 #define RUI_SHARE_GS_PARAM_WCN OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_WCN
 #define RUI_SHARE_GSQ_PARAM_WCN OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_WCN_QUICK
 #define RUI_SHARE_GSQ_PARAM OFX_REMOTEUI_SERVER_SHARE_GETTER_SETTER_PARAM_QUICK
+
+
+
+
+
 
 #define RUI_NEW_GROUP OFX_REMOTEUI_SERVER_SET_UPCOMING_PARAM_GROUP
 #define RUI_NEW_COLOR OFX_REMOTEUI_SERVER_SET_NEW_COLOR

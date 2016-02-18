@@ -29,7 +29,7 @@ public:
 	ofxOscMessage &copy(const ofxOscMessage &other);
 
 	std::string getAddress() const;
-	std::string getRemoteIp();
+	std::string getRemoteIp() const;
 	int getNumArgs() const;
 	int32_t getArgAsInt32(int index) const;
 	float getArgAsFloat(int index) const;
