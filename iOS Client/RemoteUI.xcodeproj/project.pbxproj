@@ -457,7 +457,7 @@
 				ORGANIZATIONNAME = "Oriol Ferrer Mesià";
 				TargetAttributes = {
 					BBAFD8F7191FCD0000FF7733 = {
-						DevelopmentTeam = W2H3W29D9P;
+						DevelopmentTeam = 86294Z3YEC;
 					};
 					BBAFD91E191FCD0000FF7733 = {
 						TestTargetID = BBAFD8F7191FCD0000FF7733;
@@ -690,6 +690,7 @@
 				);
 				INFOPLIST_FILE = "RemoteUIClient/RemoteUI-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ericmika.Test;
 				PRODUCT_NAME = RemoteUI;
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
@@ -718,6 +719,7 @@
 				);
 				INFOPLIST_FILE = "RemoteUIClient/RemoteUI-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ericmika.Test;
 				PRODUCT_NAME = RemoteUI;
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
