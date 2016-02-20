@@ -1106,13 +1106,14 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 			//			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
 
 			// temp limit broacast to local... having issues TODO
-			//multicastIP = "127.0.0.1";
-
+			// multicastIP = "127.0.0.1";
+			// multicastIP = "255.255.255.255";
+			multicastIP = "224.0.0.1";
 			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
 
 #endif
 
-																																			//#endif
+			//#endif
 
 			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << "sec at this multicast @ " << multicastIP << ":"
 									<< OFXREMOTEUI_BROADCAST_PORT;
@@ -1943,11 +1944,7 @@ void ofxRemoteUIServer::updateServer(float dt) {
 		ofxOscMessage m;
 		oscReceiver.getNextMessage(&m);
 
-
-
 		if (!readyToSend) { // if not connected, connect to our friend so we can talk back
-
-		
 
 			RLOG_VERBOSE << "Not ready to send! Connecting to " << m.getRemoteIp();
 			connect(m.getRemoteIp(), port + 1);
@@ -2025,10 +2022,9 @@ void ofxRemoteUIServer::updateServer(float dt) {
 
 			case TEST_ACTION: // we got a request from client, lets bounce back asap.
 				sendTEST();
-				//if(verbose)RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!" ;
+				// if(verbose)RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!" ;
 
-
-				//RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!";
+				// RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!";
 				break;
 
 			case PRESET_LIST_ACTION: // client wants us to send a list of all available presets
@@ -2448,7 +2444,8 @@ void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter
 		RLOG_NOTICE << "Sharing Getter / Setter Int Param '" << paramName << "'";
 }
 
-void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names, ofColor c) {
+void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names,
+																	 ofColor c) {
 	if (names.size() != max - min + 1) {
 		RLOG_ERROR << "Error sharing enum param '" << paramName << "': Number of supplied strings doesnt match enum range!";
 	}
