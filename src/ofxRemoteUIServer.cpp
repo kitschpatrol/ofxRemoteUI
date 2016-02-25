@@ -1071,7 +1071,6 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 				broadcast.s_addr = host.s_addr | ~mask.s_addr;
 			} else {
 				// Failed converting strings to ip
-				
 			}
 
 				if (inet_ntop(AF_INET, &broadcast, broadcast_address, INET_ADDRSTRLEN) != NULL) {

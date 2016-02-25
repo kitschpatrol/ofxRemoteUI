@@ -6,8 +6,7 @@
 //
 //
 
-#ifndef emptyExample_RemoteParam_h
-#define emptyExample_RemoteParam_h
+#pragma once
 
 #ifdef CINDER_AVAILABLE
 #include "cinder/Cinder.h"
@@ -47,8 +46,6 @@ using namespace std;
 #define RLOG_WARNING (cout << endl)
 #define RLOG_VERBOSE (cout << endl)
 #endif
-
-#endif // emptyExample_RemoteParam_h
 
 enum RemoteUICallClientAction {
 	SERVER_CONNECTED,

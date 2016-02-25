@@ -6,67 +6,66 @@
 //  Copyright (c) 2014 Oriol Ferrer Mesià. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#pragma once
+
 #import "ParamUI.h"
 #include "ofxRemoteUIClient.h"
+#import <UIKit/UIKit.h>
 
+#define REFRESH_RATE 1.0f / 15.0f
+#define TOOLBAR_H 44
+#define CONNECT_EMOJI @"🌍"
+#define PRESET_EMOJI @"📖"
+#define SAVE_EMOJI @"Save"
+#define ADD_PRESET_EMOJI @"Add📖"
 
-#define REFRESH_RATE			1.0f/15.0f
-#define TOOLBAR_H				44
-#define CONNECT_EMOJI			@"🌍"
-#define PRESET_EMOJI			@"📖"
-#define SAVE_EMOJI				@"Save"
-#define ADD_PRESET_EMOJI		@"Add📖"
+@interface FirstViewController : UICollectionViewController <UIActionSheetDelegate> {
 
-@interface FirstViewController : UICollectionViewController <UIActionSheetDelegate>{
+@public
 
-	@public
+	ofxRemoteUIClient *client;
+	NSTimer *timer;
 
+	map<string, ParamUI *> widgets;
 
-	ofxRemoteUIClient *				client;
-	NSTimer *						timer;
+	NSMutableArray *paramViews;
+	NSMutableArray *currentNeighbors;
+	vector<string> presets;
 
-	map<string, ParamUI*>			widgets;
+	bool needFullParamsUpdate;
+	BOOL connected;
 
-	NSMutableArray *				paramViews;
-	NSMutableArray *				currentNeighbors;
-	vector<string>					presets;
+	// toolbar
+	UIToolbar *toolbar;
+	UIBarButtonItem *connectB;
+	UIBarButtonItem *presetsButton;
+	UIBarButtonItem *saveButton;
+	UIBarButtonItem *addPresetsButton;
 
-	bool							needFullParamsUpdate;
-	BOOL							connected;
+	// current or upcoming connection
+	NSString *address;
+	NSString *port;
 
-	//toolbar
-	UIToolbar *						toolbar;
-	UIBarButtonItem *				connectB;
-	UIBarButtonItem *				presetsButton;
-	UIBarButtonItem *				saveButton;
-	UIBarButtonItem *				addPresetsButton;
-
-
-	//current or upcoming connection
-	NSString *						address;
-	NSString *						port;
-
-	//actionSheets
-	UIActionSheet *					connectSheet;
-	UIActionSheet *					presetsSheet;
+	// actionSheets
+	UIActionSheet *connectSheet;
+	UIActionSheet *presetsSheet;
 }
 
--(ofxRemoteUIClient *)getClient;
--(void)fullParamsUpdate;
--(void)partialParamsUpdate;
--(void)cleanUpGUIParams;
+- (ofxRemoteUIClient *)getClient;
+- (void)fullParamsUpdate;
+- (void)partialParamsUpdate;
+- (void)cleanUpGUIParams;
 
--(void)updateNeighbors;
--(void)updatePresets;
+- (void)updateNeighbors;
+- (void)updatePresets;
 
--(IBAction)pressedConnectButton;
--(IBAction)pressedPresetsButton;
--(IBAction)pressedSaveButton;
--(IBAction)pressedAddPresetButton;
+- (IBAction)pressedConnectButton;
+- (IBAction)pressedPresetsButton;
+- (IBAction)pressedSaveButton;
+- (IBAction)pressedAddPresetButton;
 
--(void)connect;
--(void)disconnect;
+- (void)connect;
+- (void)disconnect;
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex;
 
