@@ -1057,35 +1057,31 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 		string subnetMask;
 		computerIP = getMyIP(userSuppliedNetInterface, subnetMask);
 		doBroadcast = true;
+
 		string multicastIP;
-		if (subnetMask == "") {											// old way, we ignore subnet mask and assume the net's subnet mask is 255.255.255.0
-			if (computerIP != RUI_LOCAL_IP_ADDRESS) { // this only handles 255.255.255.0 style networks
-				vector<string> comps;
-				split(comps, computerIP, '.');
-				multicastIP = comps[0] + "." + comps[1] + "." + comps[2] + "." + "255";
+
+		if (computerIP != RUI_LOCAL_IP_ADDRESS) { // if addr is not 127.0.0.1
+
+
+			struct in_addr host, mask, broadcast;
+			char broadcast_address[INET_ADDRSTRLEN];
+
+			// get broadcast
+			if (inet_pton(AF_INET, computerIP.c_str(), &host) == 1 && inet_pton(AF_INET, subnetMask.c_str(), &mask) == 1) {
+				broadcast.s_addr = host.s_addr | ~mask.s_addr;
 			} else {
-				multicastIP = "255.255.255.255";
+				// Failed converting strings to ip
+				
 			}
 
-		} else { // new stuff, we actually build the multicast IP based on the subnet mask too
-			// this assumes all subnet components are either 0 or 255, the multicast @ will not be correct otherwise! TODO!
-			if (computerIP != RUI_LOCAL_IP_ADDRESS) { // if addr is not 127.0.0.1
-				vector<string> addComps;
-				split(addComps, computerIP, '.');
-				vector<string> subnetComps;
-				split(subnetComps, subnetMask, '.');
-				for (int i = 0; i < 4; i++) {
-					if (subnetComps[i] == "255") {
-						multicastIP += addComps[i];
-					} else {
-						multicastIP += "255";
-					}
-					if (i < 3)
-						multicastIP += ".";
+				if (inet_ntop(AF_INET, &broadcast, broadcast_address, INET_ADDRSTRLEN) != NULL) {
+					multicastIP = string(broadcast_address);
+				} else {
+					// Failed converting ip to string
 				}
-			} else {
-				multicastIP = "255.255.255.255";
-			}
+		} else {
+			// Go with default guess
+			multicastIP = "255.255.255.255";
 		}
 
 #ifdef OF_AVAILABLE
@@ -1095,27 +1091,16 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 			RLOG_WARNING << "no network interface found, we will not broadcast ourselves";
 		}
 #endif
-
 		broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT); // multicast @
-
 #endif
 
 		if (doBroadcast) {
 #ifdef CINDER_AVAILABLE
-			//			// Cinder's OSC library needs a flag to broadcast TODO
-			//			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
-
-			// temp limit broacast to local... having issues TODO
-			//multicastIP = "127.0.0.1";
-
+			// Cinder's OSC library needs a flag to broadcast
 			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
-
 #endif
 
-																																			//#endif
-
-			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << "sec at this multicast @ " << multicastIP << ":"
-									<< OFXREMOTEUI_BROADCAST_PORT;
+			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << " sec at this multicast " << multicastIP << ":" << OFXREMOTEUI_BROADCAST_PORT;
 		}
 
 		if (port_ == -1) { // if no port specified, pick a random one, but only the very first time we get launched!
@@ -1943,11 +1928,7 @@ void ofxRemoteUIServer::updateServer(float dt) {
 		ofxOscMessage m;
 		oscReceiver.getNextMessage(&m);
 
-
-
 		if (!readyToSend) { // if not connected, connect to our friend so we can talk back
-
-		
 
 			RLOG_VERBOSE << "Not ready to send! Connecting to " << m.getRemoteIp();
 			connect(m.getRemoteIp(), port + 1);
@@ -2025,10 +2006,9 @@ void ofxRemoteUIServer::updateServer(float dt) {
 
 			case TEST_ACTION: // we got a request from client, lets bounce back asap.
 				sendTEST();
-				//if(verbose)RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!" ;
+				// if(verbose)RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!" ;
 
-
-				//RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!";
+				// RLOG_VERBOSE << "ofxRemoteUIServer: " << m.getRemoteIp() << " says TEST!";
 				break;
 
 			case PRESET_LIST_ACTION: // client wants us to send a list of all available presets
@@ -2448,7 +2428,8 @@ void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter
 		RLOG_NOTICE << "Sharing Getter / Setter Int Param '" << paramName << "'";
 }
 
-void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names, ofColor c) {
+void ofxRemoteUIServer::shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names,
+																	 ofColor c) {
 	if (names.size() != max - min + 1) {
 		RLOG_ERROR << "Error sharing enum param '" << paramName << "': Number of supplied strings doesnt match enum range!";
 	}
