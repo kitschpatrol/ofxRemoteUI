@@ -60,7 +60,7 @@ void ofxRemoteUIServer::setAutomaticBackupsEnabled(bool enabled) {
 }
 
 void ofxRemoteUIServer::setDrawsNotificationsAutomaticallly(bool draw) {
-	drawNotifications = draw;
+	drawNotificationsAutomatically = draw;
 }
 
 void ofxRemoteUIServer::setShowInterfaceKey(char k) {
@@ -85,7 +85,7 @@ ofxRemoteUIServer::ofxRemoteUIServer() {
 	upcomingGroup = OFXREMOTEUI_DEFAULT_PARAM_GROUP;
 	verbose_ = false;
 	threadedUpdate = false;
-	drawNotifications = true;
+	drawNotificationsAutomatically = true;
 	showUI = false;
 	loadedFromXML = false;
 	clearXmlOnSaving = false;
@@ -935,14 +935,12 @@ void ofxRemoteUIServer::restoreAllParamsToDefaultValues() {
 void ofxRemoteUIServer::pushParamsToClient() {
 
 	vector<string> changedParams = scanForUpdatedParamsAndSync();
-#ifdef OF_AVAILABLE
 	for (int i = 0; i < changedParams.size(); i++) {
 		string pName = changedParams[i];
 		RemoteUIParam &p = params[pName];
 		onScreenNotifications.addParamUpdate(pName, p, ofColor(p.r, p.g, p.b, p.a),
 																				 p.type == REMOTEUI_PARAM_COLOR ? ofColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal) : ofColor(0, 0, 0, 0));
 	}
-#endif
 
 	if (readyToSend) {
 
@@ -1157,6 +1155,11 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 		// TODO get frame diff instead of assuming 60fps
 		update(0.01666666666666667);
 	});
+
+	// TODO draw?
+	//ci::app::App::get()->().connect([this]() { prepareForExit(); });
+
+
 
 #endif
 
@@ -1804,7 +1807,7 @@ void ofxRemoteUIServer::draw(int x, int y) {
 	}
 
 	if (needsToDrawNotification) {
-		if (drawNotifications) {
+		if (drawNotificationsAutomatically) {
 #if (defined(USE_OFX_TIME_MEASUREMENTS) && !defined(TIME_MEASUREMENTS_DISABLED))
 			ofxTimeMeasurements *tm = TIME_SAMPLE_GET_INSTANCE();
 			if (tm->getDrawLocation() == TIME_MEASUREMENTS_BOTTOM_LEFT) {
@@ -1827,6 +1830,24 @@ void ofxRemoteUIServer::draw(int x, int y) {
 	}
 }
 #endif
+
+#ifdef CINDER_AVAILABLE
+
+void ofxRemoteUIServer::drawNotifications() {
+	
+	for (int i = 0; i < paramsToWatch.size(); i++) {
+		RemoteUIParam &p = params[paramsToWatch[i]];
+		string v = p.getValueAsStringFromPointer();
+		ofColor c = ofColor(p.r, p.g, p.b, 255);
+		onScreenNotifications.addParamWatch(paramsToWatch[i], v, c);
+	}
+	
+	onScreenNotifications.draw(0, 0);
+}
+
+
+#endif
+
 
 #ifdef OF_AVAILABLE
 
@@ -1899,12 +1920,11 @@ void ofxRemoteUIServer::handleBroadcast() {
 
 void ofxRemoteUIServer::updateServer(float dt) {
 
-#ifdef OF_AVAILABLE
 	onScreenNotifications.update(dt);
-#endif
 
-	if (!enabled)
+	if (!enabled) {
 		return;
+	}
 
 	timeCounter += dt;
 	broadcastTime += dt;
@@ -1946,8 +1966,9 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.action = CLIENT_CONNECTED;
 				if (callBack)
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("CONNECTED (" + cbArg.host + ")!");
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -1974,10 +1995,12 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.group = cbArg.param.group;
 				if (callBack)
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+
 				RemoteUIParam &p = params[dm.paramName];
 				onScreenNotifications.addParamUpdate(dm.paramName, p, ofColor(p.r, p.g, p.b, p.a),
-																						 p.type == REMOTEUI_PARAM_COLOR ? ofColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal) : ofColor(0, 0, 0, 0));
+					p.type == REMOTEUI_PARAM_COLOR ? ofColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal) : ofColor(0, 0, 0, 0));
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -1988,10 +2011,13 @@ void ofxRemoteUIServer::updateServer(float dt) {
 			case CIAO_ACTION: {
 				sendCIAO();
 				cbArg.action = CLIENT_DISCONNECTED;
-				if (callBack)
+				if (callBack) {
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+				}
+
 				onScreenNotifications.addNotification("DISCONNECTED (" + cbArg.host + ")!");
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2027,8 +2053,9 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.msg = presetName;
 				if (callBack)
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("SET PRESET to '" + getFinalPath(OFXREMOTEUI_PRESET_DIR) + "/" + presetName + ".xml'");
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2046,8 +2073,10 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.msg = presetName;
 				if (callBack)
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("SAVED PRESET to '" + getFinalPath(OFXREMOTEUI_PRESET_DIR) + "/" + presetName + ".xml'");
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2065,8 +2094,10 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.msg = presetName;
 				if (callBack)
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("DELETED PRESET '" + getFinalPath(OFXREMOTEUI_PRESET_DIR) + "/" + presetName + ".xml'");
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 				if (verbose_)
 					RLOG_NOTICE << "DELETE preset: " << presetName;
@@ -2081,8 +2112,10 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.action = CLIENT_SAVED_STATE;
 				if (callBack)
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("SAVED CONFIG to default XML");
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2097,8 +2130,11 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				restoreAllParamsToInitialXML();
 				sendRESX(true);
 				cbArg.action = CLIENT_DID_RESET_TO_XML;
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("RESET CONFIG TO SERVER-LAUNCH XML values");
+
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2114,8 +2150,10 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.action = CLIENT_DID_RESET_TO_DEFAULTS;
 				restoreAllParamsToDefaultValues();
 				sendRESD(true);
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("RESET CONFIG TO DEFAULTS (source defined values)");
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2144,8 +2182,10 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.group = groupName;
 				if (callBack)
 					callBack(cbArg);
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("SET '" + groupName + "' GROUP TO '" + presetName + ".xml' PRESET");
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2163,8 +2203,11 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.action = CLIENT_SAVED_GROUP_PRESET;
 				cbArg.msg = presetName;
 				cbArg.group = groupName;
-#ifdef OF_AVAILABLE
+
 				onScreenNotifications.addNotification("SAVED PRESET '" + presetName + ".xml' FOR GROUP '" + groupName + "'");
+
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2184,8 +2227,9 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.action = CLIENT_DELETED_GROUP_PRESET;
 				cbArg.msg = presetName;
 				cbArg.group = groupName;
-#ifdef OF_AVAILABLE
 				onScreenNotifications.addNotification("DELETED PRESET '" + presetName + ".xml' FOR GROUP'" + groupName + "'");
+
+#ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
 #ifdef CINDER_AVAILABLE
@@ -2578,9 +2622,8 @@ void ofxRemoteUIServer::sendLogToClient(string message) {
 		try {
 			oscSender.sendMessage(m);
 			RLOG_NOTICE << "RUI_LOG(" + message + ")";
-#ifdef OF_AVAILABLE
+
 			onScreenNotifications.addNotification(message);
-#endif
 		} catch (exception e) {
 			RLOG_ERROR << "Exception sendLogToClient " << e.what();
 		}

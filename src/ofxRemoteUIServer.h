@@ -16,10 +16,10 @@
 #include "ofxRemoteUI.h"
 
 #include "ofxXmlSettings.h"
+#include "ofxRemoteUISimpleNotifications.h"
 
 #ifdef OF_AVAILABLE
 #include "ofxOsc.h"
-#include "ofxRemoteUISimpleNotifications.h"
 #endif
 
 #ifdef CINDER_AVAILABLE
@@ -198,10 +198,19 @@ public:
 	}
 
 #ifdef CINDER_AVAILABLE
+
+	void drawNotifications();
+
+
 	ci::signals::Signal<void(RemoteUIServerCallBackArg)> &getSignalCallback() {
 		return cbSignal;
 	};
 #endif
+
+
+	void setNotificationScreenTime(float t) {
+		onScreenNotifications.setNotificationScreenTime(t);
+	}
 
 #ifdef OF_AVAILABLE
 
@@ -210,9 +219,7 @@ public:
 	void setCustomScreenHeight(int h);
 	void setCustomScreenWidth(int w);
 
-	void setNotificationScreenTime(float t) {
-		onScreenNotifications.setNotificationScreenTime(t);
-	}
+
 
 	// of style event/callback
 	ofEvent<RemoteUIServerCallBackArg> clientAction;
@@ -297,7 +304,7 @@ private:
 	string directoryPrefix; // the optional directory prefix where we should store data
 
 	bool doBroadcast; // controls if the server advertises itself
-	bool drawNotifications;
+	bool drawNotificationsAutomatically;
 
 	bool loadedFromXML; // we start with loadedFromXML=false; once loadXML is called, this becomes true
 	bool saveToXmlOnExit;
@@ -320,7 +327,13 @@ private:
 
 #ifdef CINDER_AVAILABLE
 	ci::signals::Signal<void(RemoteUIServerCallBackArg)> cbSignal;
+
+
 #endif
+
+	ofxRemoteUISimpleNotifications onScreenNotifications;
+
+
 
 #ifdef OF_AVAILABLE
 
@@ -331,7 +344,6 @@ private:
 
 	int selectedItem;
 	ofVboMesh uiLines;
-	ofxRemoteUISimpleNotifications onScreenNotifications;
 
 	vector<string> presetsCached; // for the built in client
 	unordered_map<string, vector<string>> groupPresetsCached;

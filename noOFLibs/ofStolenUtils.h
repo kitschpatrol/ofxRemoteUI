@@ -25,6 +25,8 @@
 int ofToInt(const std::string &intString);
 float ofToFloat(const std::string &floatString);
 float ofClamp(float value, float min, float max);
+float ofMap(float value, float inputMin, float inputMax, float outputMin, float outputMax, bool clamp = false);
+
 
 template <class T>
 std::string ofToString(const T &value) {
@@ -56,5 +58,9 @@ std::string ofToString(const T &value, int precision, int width, char fill) {
 	out << std::fixed << std::setfill(fill) << std::setw(width) << std::setprecision(precision) << value;
 	return out.str();
 }
+
+
+
+
 
 #endif

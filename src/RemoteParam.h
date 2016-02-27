@@ -253,7 +253,6 @@ public:
 
 	string getValueAsString() const {
 		std::ostringstream ss;
-		char aux[50];
 		switch (type) {
 			case REMOTEUI_PARAM_FLOAT: // GSFDONE
 				ss << floatVal;
@@ -272,6 +271,7 @@ public:
 			case REMOTEUI_PARAM_STRING: // GSSDONE
 				return stringVal;
 			case REMOTEUI_PARAM_COLOR: { // GSCDONE
+				char aux[50];
 				sprintf(aux, "RGBA: [%d, %d, %d, %d]", redVal, greenVal, blueVal, alphaVal);
 				return string(aux);
 			}
