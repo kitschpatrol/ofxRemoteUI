@@ -2529,7 +2529,7 @@ void ofxRemoteUIServer::shareParam(string paramName, int *param, int min, int ma
 		RLOG_NOTICE << "Sharing Enum Param '" << paramName << "'";
 }
 
-void ofxRemoteUIServer::shareParam(string paramName, std::function<std::string()> getter, std::function<void(std::string)> setter, ofColor c) {
+void ofxRemoteUIServer::shareParam(string paramName, std::function<std::string()> getter, std::function<void(std::string)> setter, ofColor c, int) {
 	RemoteUIParam p;
 	p.type = REMOTEUI_PARAM_STRING; // GSSDONE
 	p.stringValAddr = nullptr;
@@ -2556,7 +2556,7 @@ void ofxRemoteUIServer::shareParam(string paramName, string *param, ofColor c, i
 		RLOG_NOTICE << "Sharing String Param '" << paramName << "'";
 }
 
-void ofxRemoteUIServer::shareParam(string paramName, std::function<ofColor()> getter, std::function<void(ofColor)> setter, ofColor bgColor) {
+void ofxRemoteUIServer::shareParam(string paramName, std::function<ofColor()> getter, std::function<void(ofColor)> setter, ofColor bgColor, int nothing) {
 	RemoteUIParam p;
 	p.type = REMOTEUI_PARAM_COLOR; // GSCDONE
 	p.redValAddr = nullptr;

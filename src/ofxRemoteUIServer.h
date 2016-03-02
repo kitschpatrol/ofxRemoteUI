@@ -86,55 +86,17 @@ public:
 	void shareParam(string paramName, int *param, int min, int max, string *names, ofColor c = ofColor(0, 0, 0, 0));				// enum with old school string array
 	void shareParam(string paramName, unsigned char *param, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0);				// ofColor
 
-	// Visual Studio's template deduction really dislikes default parameters in combination with std::function arguments.
-	// Handling defaults through additional overloads fixes this.
-	// More: http://stackoverflow.com/questions/31172921/different-overloads-with-stdfunction-parameters-is-ambiguous-with-bind-someti
-
-	
-
-
-
-	void shareParam(string paramName, std::function<bool()> getter, std::function<void(bool)> setter, ofColor c); // bool
-	void shareParam(string paramName, std::function<bool()> getter, std::function<void(bool)> setter) {
-		shareParam(paramName, getter, setter, ofColor(0,0,0,0));
-	}
-
-	// float
-	void shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max, ofColor c);
-	void shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max) {
-		shareParam(paramName, getter, setter, min, max, ofColor(0, 0, 0, 0));
-	}
-	void shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter) {
-		shareParam(paramName, getter, setter, 0.0f, 1.0f);
-	}
-
-	// int
+	void shareParam(string paramName, std::function<float()> getter, std::function<void(float)> setter, float min, float max, ofColor c = ofColor(0, 0, 0, 0));
+	void shareParam(string paramName, std::function<bool()> getter, std::function<void(bool)> setter, ofColor c = ofColor(0, 0, 0, 0));
 	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, ofColor c); // int
-	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max) {
-		shareParam(paramName, getter, setter, min, max, ofColor(0, 0, 0, 0));
-	}
-	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter) {
-		shareParam(paramName, getter, setter, 0, 1025);
-	}
+	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names,
+									ofColor c = ofColor(0, 0, 0, 0)); // enum
+	void shareParam(string paramName, std::function<std::string()> getter, std::function<void(std::string)> setter, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0);
 
-	// enum
-	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names, ofColor c); // enum
-	void shareParam(string paramName, std::function<int()> getter, std::function<void(int)> setter, int min, int max, vector<string> names) {
-		shareParam(paramName, getter, setter, min, max, names, ofColor(0, 0, 0, 0));
-	}
+	void shareParam(string paramName, std::function<ofColor()> getter, std::function<void(ofColor)> setter, ofColor bgColor = ofColor(0, 0, 0, 0), int nothing = 0);				// ofColor
 	
-	// string
-	void shareParam(string paramName, std::function<std::string()> getter, std::function<void(std::string)> setter, ofColor c);
-	void shareParam(string paramName, std::function<std::string()> getter, std::function<void(std::string)> setter) {
-		shareParam(paramName, getter, setter, ofColor(0, 0, 0, 0));
-	}
-
-	// color
-	void shareParam(string paramName, std::function<ofColor()> getter, std::function<void(ofColor)> setter, ofColor c);
-	void shareParam(string paramName, std::function<ofColor()> getter, std::function<void(ofColor)> setter) {
-		shareParam(paramName, getter, setter, ofColor(0, 0, 0, 0));
-	}
-
+	
+	
 	void addSpacer(string name);
 
 	void setParamGroup(string g); // set for all the upcoming params
