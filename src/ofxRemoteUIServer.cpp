@@ -1056,7 +1056,7 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 		computerIP = getMyIP(userSuppliedNetInterface, subnetMask);
 		doBroadcast = true;
 
-		string multicastIP;
+		string broadcastIP;
 
 		if (computerIP != RUI_LOCAL_IP_ADDRESS) { // if addr is not 127.0.0.1
 			struct in_addr host, mask, broadcast;
@@ -1070,32 +1070,32 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 			}
 
 			if (inet_ntop(AF_INET, &broadcast, broadcast_address, INET_ADDRSTRLEN) != NULL) {
-				multicastIP = string(broadcast_address);
+				broadcastIP = string(broadcast_address);
 			} else {
 				// Failed converting ip to string
 			}
 		} else {
 			// Go with default guess
-			multicastIP = "255.255.255.255";
+			broadcastIP = "255.255.255.255";
 		}
 
 #ifdef OF_AVAILABLE
 #ifdef _WINDOWS
-		if (multicastIP == "255.255.255.255") {
+		if (broadcastIP == "255.255.255.255") {
 			doBroadcast = false; // windows crashes on bradcast if no devices are up!
 			RLOG_WARNING << "no network interface found, we will not broadcast ourselves";
 		}
 #endif
-		broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT); // multicast @
+		broadcastSender.setup(broadcastIP, OFXREMOTEUI_BROADCAST_PORT); // broadcast @
 #endif
 
 		if (doBroadcast) {
 #ifdef CINDER_AVAILABLE
 			// Cinder's OSC library needs a flag to broadcast
-			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
+			broadcastSender.setup(broadcastIP, OFXREMOTEUI_BROADCAST_PORT, true); // broadcast @
 #endif
 
-			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << " sec at this multicast " << multicastIP << ":"
+			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << " sec at this broadcast IP " << broadcastIP << ":"
 									<< OFXREMOTEUI_BROADCAST_PORT;
 		}
 
