@@ -24,8 +24,6 @@
 #include "cinder/gl/gl.h"
 #include "ofStolenUtils.h"
 
-
-
 #endif
 
 #if defined OF_VERSION_MINOR /*if OF exists*/
@@ -61,7 +59,12 @@ public:
 #endif
 
 #if defined CINDER_AVAILABLE
+
+#if defined CINDER_MSW
 		mFont = ci::gl::TextureFont::create(ci::Font("Lucida Console", 50));
+#else
+		mFont = ci::gl::TextureFont::create(ci::Font("Menlo", 50));
+#endif
 		mFontHeight = mFont->measureString("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890").y;
 #endif
 	};
@@ -100,8 +103,8 @@ public:
 		const float spacing = NOTIFICATION_LINEHEIGHT;
 		float yy = y;
 
-	#if defined CINDER_AVAILABLE
-			ci::gl::ScopedBlendAlpha textAlpha;
+#if defined CINDER_AVAILABLE
+		ci::gl::ScopedBlendAlpha textAlpha;
 #endif
 
 		// Notifications
@@ -121,7 +124,7 @@ public:
 			const float a = ofClamp(NOTIFICATION_ALPHA_OVERFLOW * paramNotification.time, 0.0f, 1.0f);
 			const float fresh = 1.0f - ofClamp((screenTime + 1) - paramNotification.time, 0.0f, 1.0f);
 
-			// Draw the label and background			
+			// Draw the label and background
 			ofColor bgColor = (fresh > 0.1) ? paramNotification.bgColor : ofColor(paramNotification.bgColor, 255.0 * a);
 
 			string total = paramName + ": " + paramNotification.value;
@@ -331,7 +334,6 @@ private:
 	}
 
 	float mFontHeight;
-
 
 #endif
 	vector<SimpleNotification> notifications;
