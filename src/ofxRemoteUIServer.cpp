@@ -1059,8 +1059,6 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 		string multicastIP;
 
 		if (computerIP != RUI_LOCAL_IP_ADDRESS) { // if addr is not 127.0.0.1
-
-
 			struct in_addr host, mask, broadcast;
 			char broadcast_address[INET_ADDRSTRLEN];
 
@@ -1071,11 +1069,11 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 				// Failed converting strings to ip
 			}
 
-				if (inet_ntop(AF_INET, &broadcast, broadcast_address, INET_ADDRSTRLEN) != NULL) {
-					multicastIP = string(broadcast_address);
-				} else {
-					// Failed converting ip to string
-				}
+			if (inet_ntop(AF_INET, &broadcast, broadcast_address, INET_ADDRSTRLEN) != NULL) {
+				multicastIP = string(broadcast_address);
+			} else {
+				// Failed converting ip to string
+			}
 		} else {
 			// Go with default guess
 			multicastIP = "255.255.255.255";
@@ -1097,7 +1095,8 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 			broadcastSender.setup(multicastIP, OFXREMOTEUI_BROADCAST_PORT, true); // multicast @
 #endif
 
-			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << " sec at this multicast " << multicastIP << ":" << OFXREMOTEUI_BROADCAST_PORT;
+			RLOG_NOTICE << "Broacasting my presence every " << OFXREMOTEUI_BORADCAST_INTERVAL << " sec at this multicast " << multicastIP << ":"
+									<< OFXREMOTEUI_BROADCAST_PORT;
 		}
 
 		if (port_ == -1) { // if no port specified, pick a random one, but only the very first time we get launched!
@@ -1156,10 +1155,8 @@ void ofxRemoteUIServer::setup(int port_, float updateInterval_) {
 		update(0.01666666666666667);
 	});
 
-	// TODO draw?
-	//ci::app::App::get()->().connect([this]() { prepareForExit(); });
-
-
+// TODO draw?
+// ci::app::App::get()->().connect([this]() { prepareForExit(); });
 
 #endif
 
@@ -1834,20 +1831,18 @@ void ofxRemoteUIServer::draw(int x, int y) {
 #ifdef CINDER_AVAILABLE
 
 void ofxRemoteUIServer::drawNotifications() {
-	
+
 	for (int i = 0; i < paramsToWatch.size(); i++) {
 		RemoteUIParam &p = params[paramsToWatch[i]];
 		string v = p.getValueAsStringFromPointer();
 		ofColor c = ofColor(p.r, p.g, p.b, 255);
 		onScreenNotifications.addParamWatch(paramsToWatch[i], v, c);
 	}
-	
+
 	onScreenNotifications.draw(0, 0);
 }
 
-
 #endif
-
 
 #ifdef OF_AVAILABLE
 
@@ -1998,7 +1993,7 @@ void ofxRemoteUIServer::updateServer(float dt) {
 
 				RemoteUIParam &p = params[dm.paramName];
 				onScreenNotifications.addParamUpdate(dm.paramName, p, ofColor(p.r, p.g, p.b, p.a),
-					p.type == REMOTEUI_PARAM_COLOR ? ofColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal) : ofColor(0, 0, 0, 0));
+																						 p.type == REMOTEUI_PARAM_COLOR ? ofColor(p.redVal, p.greenVal, p.blueVal, p.alphaVal) : ofColor(0, 0, 0, 0));
 
 #ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
@@ -2133,7 +2128,6 @@ void ofxRemoteUIServer::updateServer(float dt) {
 
 				onScreenNotifications.addNotification("RESET CONFIG TO SERVER-LAUNCH XML values");
 
-
 #ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);
 #endif
@@ -2205,7 +2199,6 @@ void ofxRemoteUIServer::updateServer(float dt) {
 				cbArg.group = groupName;
 
 				onScreenNotifications.addNotification("SAVED PRESET '" + presetName + ".xml' FOR GROUP '" + groupName + "'");
-
 
 #ifdef OF_AVAILABLE
 				ofNotifyEvent(clientAction, cbArg, this);

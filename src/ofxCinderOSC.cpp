@@ -63,9 +63,6 @@ ofxOscMessage &ofxOscMessage::copy(const ofxOscMessage &other) {
 	// clear();
 	// copy address
 
-
-
-
 	this->mBackingMessage = other.mBackingMessage;
 
 	//	address = other.address;
@@ -157,19 +154,14 @@ void ofxOscReceiver::setup(int listen_port) {
 
 	// TODO mRemoteIP?
 
-
 	mReceiverRef->setListener("*",																	 //
 														[&](const ci::osc::Message &message) { //
 
-
-															mMessages.push(message);						 //
+															mMessages.push(message); //
 														});
 
 	mReceiverRef->bind();
 	mReceiverRef->listen();
-
-
-
 }
 
 bool ofxOscReceiver::hasWaitingMessages() {
@@ -182,7 +174,6 @@ bool ofxOscReceiver::getNextMessage(ofxOscMessage *message) {
 	} else {
 		// TODO better way to do this?
 		ofxOscMessage translatedMessage;
-
 
 		translatedMessage.mBackingMessage = mMessages.front();
 		message->copy(translatedMessage);
