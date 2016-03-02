@@ -49,6 +49,8 @@ class ofxOscSender {
 	friend class ofxOscReceiver;
 
 public:
+	ofxOscSender();
+	
 	void setup(std::string hostname, int port, bool broadcast = false);
 	void sendMessage(ofxOscMessage &message);
 	// void sendBundle( ofxOscBundle& bundle ); // TODO

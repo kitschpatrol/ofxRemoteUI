@@ -93,41 +93,39 @@ ofxOscMessage &ofxOscMessage::copy(const ofxOscMessage &other) {
 
 #pragma mark - ofxOscSender
 
+ofxOscSender::ofxOscSender()
+		: mSocket(new udp::socket(ci::app::App::get()->io_service())) {
+}
+
 void ofxOscSender::setup(std::string hostname, int port, bool broadcast) {
 	if (mSenderRef != nullptr) {
-		// mSocket->close(); // Spares a asio.system:48 runtime crash on Mac Release builds?
+		// Spares a asio.system:48 runtime crash on Mac Release builds?
+		if (mSocket->is_open()) {
+			mSocket->close();
+		}
+
 		mSenderRef->close();
 	}
 
-	// TODO deal with creating
+	mSocket->open(udp::v4());
+	asio::socket_base::reuse_address option(true);
+	mSocket->set_option(option);
 
-	//	static int localPort = 12345;
+	if (broadcast) {
+		mSocket->set_option(asio::socket_base::broadcast(true));
+	}
 
-	//	mSocket = std::make_shared<udp::socket>(udp::socket(ci::app::App::get()->io_service(), udp::endpoint(udp::v4(), 1234)));
-	//	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(mSocket, udp::endpoint(address::from_string(hostname), port)));
+	mSocket->bind(udp::endpoint(udp::v4(), 12345));
 
-	//	mSocket->set_option(asio::socket_base::broadcast(true));
-	// why no work!?
-	//	std::cout << "address_v4::broadcast() " << address_v4::broadcast() << std::endl;
-	//	mSocket = std::shared_ptr<udp::socket>(new udp::socket(ci::app::App::get()->io_service(), udp::endpoint(udp::v4(), 1234)));
-	//	udp::endpoint remoteEndpoint = udp::endpoint(address::from_string(hostname), port);
-	//	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(mSocket, remoteEndpoint));
-
-	// SIgnature
-	//	SenderUdp( uint16_t localPort,
-	//			   const std::string &destinationHost,
-	//			   uint16_t destinationPort,
-	//			   const protocol &protocol = protocol::v4(),
-	//			   asio::io_service &service = ci::app::App::get()->io_service() );
-
-	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(12345, hostname, port));
+	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(mSocket, udp::endpoint(address::from_string(hostname), port)));
 
 	mSenderRef->setSocketTransportErrorFn(																					 //
 			[](const asio::error_code &error, const std::string &oscAddress) {					 //
 				CI_LOG_E("Set Socket Error: " << error << " OSC Address: " << oscAddress); //																																				 //
 			});
 
-	mSenderRef->bind();
+	// No need to bind since socket is bound explicitly?
+	// mSenderRef->bind();
 }
 
 void ofxOscSender::sendMessage(ofxOscMessage &message) {
