@@ -26,7 +26,7 @@ std::string ofxOscMessage::getAddress() const {
 }
 
 std::string ofxOscMessage::getRemoteIp() const {
-	return mBackingMessage.mSenderIpAddress.to_string();
+	return mBackingMessage.getSenderIpAddress().to_string();
 }
 
 int ofxOscMessage::getNumArgs() const {
