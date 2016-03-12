@@ -1882,7 +1882,7 @@ void ofxRemoteUIServer::handleBroadcast() {
 				computerName = e.nodeName();
 				char pathbuf[2048];
 				uint32_t bufsize = sizeof(pathbuf);
-#endif
+
 
 #ifdef TARGET_OSX
 				_NSGetExecutablePath(pathbuf, &bufsize);
@@ -1896,7 +1896,7 @@ void ofxRemoteUIServer::handleBroadcast() {
 					procname[len] = '\0';
 				}
 #endif
-
+#endif
 #endif
 #ifdef CINDER_AVAILABLE
 				binaryName = ci::app::getWindow()->getTitle();
