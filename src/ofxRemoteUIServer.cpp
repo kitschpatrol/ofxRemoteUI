@@ -1882,22 +1882,25 @@ void ofxRemoteUIServer::handleBroadcast() {
 				computerName = e.nodeName();
 				char pathbuf[2048];
 				uint32_t bufsize = sizeof(pathbuf);
+#endif
+
 #ifdef TARGET_OSX
 				_NSGetExecutablePath(pathbuf, &bufsize);
 #else
 #ifdef _WINDOWS
 				GetModuleFileNameA(NULL, pathbuf, bufsize); // no idea why, but GetModuleFileName() is not defined?
 #else
-
 				char procname[1024];
 				int len = readlink("/proc/self/exe", procname, 1024 - 1);
 				if (len > 0) {
 					procname[len] = '\0';
 				}
 #endif
-#endif
-				binaryName = ofFilePath::getBaseName(pathbuf);
 
+#endif
+#ifdef CINDER_AVAILABLE
+				binaryName = ci::app::getWindow()->getTitle();
+// computerName = "computerName";
 #endif
 			}
 
