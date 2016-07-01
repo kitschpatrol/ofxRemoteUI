@@ -189,7 +189,7 @@ bool ofxXmlSettings::readTag(const string &tag, TiXmlHandle &valHandle, int whic
 //---------------------------------------------------------
 bool ofxXmlSettings::pushTag(const string &tag, int which) {
 
-	int pos = tag.find(":");
+	const int pos = static_cast<int>(tag.find(":"));
 
 	// Either find the tag specified, or the first tag if colon-seperated.
 	string tagToFind((pos > 0) ? tag.substr(0, pos) : tag);
