@@ -321,9 +321,9 @@ public:
 			case REMOTEUI_PARAM_BOOL: { // GSBDONE
 				bool v;
 				if (isUsingGetterSetter()) {
-					v = floatGetter();
+					v = boolGetter();
 				} else {
-					v = *floatValAddr;
+					v = *boolValAddr;
 				}
 				return v ? "TRUE" : "FALSE";
 			}
