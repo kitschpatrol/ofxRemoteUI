@@ -201,7 +201,7 @@ public:
 				ci::gl::drawSolidRect(makeCiRectWidthHeight(xx + knobSize * 0.5, yy + (mFontHeight - trackHeight) * 0.5, sliderW - knobSize, trackHeight));
 
 				// Knob
-				ci::gl::ScopedColor backgroundColor(ci::ColorA8u(bgColor));
+				ci::gl::ScopedColor backgroundColor((ci::ColorA8u(bgColor)));
 				const float offset = ofClamp(paramNotification.pct, 0, 1) * (sliderW - knobSize);
 				ci::gl::drawSolidRect(makeCiRectWidthHeight(xx + offset, yy + ((mFontHeight - knobSize) * 0.5), knobSize, knobSize));
 #endif

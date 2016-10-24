@@ -119,10 +119,10 @@ void ofxOscSender::setup(std::string hostname, int port, bool broadcast) {
 
 	mSenderRef = std::shared_ptr<ci::osc::SenderUdp>(new ci::osc::SenderUdp(mSocket, udp::endpoint(address::from_string(hostname), port)));
 
-	mSenderRef->setSocketTransportErrorFn(																					 //
-			[](const asio::error_code &error, const std::string &oscAddress) {					 //
-				CI_LOG_E("Set Socket Error: " << error << " OSC Address: " << oscAddress); //																																				 //
-			});
+	// mSenderRef->setSocketTransportErrorFn(																					 //
+	//		[](const asio::error_code &error, const std::string &oscAddress) {					 //
+	//			CI_LOG_E("Set Socket Error: " << error << " OSC Address: " << oscAddress); //
+	//		});																																					 //
 
 	// No need to bind since socket is bound explicitly?
 	// mSenderRef->bind();
@@ -144,12 +144,6 @@ void ofxOscReceiver::setup(int listen_port) {
 
 	mReceiverRef = std::unique_ptr<ci::osc::ReceiverUdp>(new ci::osc::ReceiverUdp(listen_port));
 
-	mReceiverRef->setSocketErrorFn(																									 //
-			[](const asio::error_code &error, const udp::endpoint &oscAddress) {				 //
-				CI_LOG_E("Set Socket Error: " << error << " OSC Address: " << oscAddress); //
-
-			});
-
 	// TODO mRemoteIP?
 
 	mReceiverRef->setListener("*",																	 //
@@ -158,8 +152,20 @@ void ofxOscReceiver::setup(int listen_port) {
 															mMessages.push(message); //
 														});
 
-	mReceiverRef->bind();
-	mReceiverRef->listen();
+	try {
+		// Bind the receiver to the endpoint. This function may throw.
+		mReceiverRef->bind();
+	} catch (const ci::osc::Exception &ex) {
+		CI_LOG_E("Error binding: " << ex.what() << " val: " << ex.value());
+	}
+
+	mReceiverRef->listen([](asio::error_code error, asio::ip::udp::endpoint endpoint) -> bool {
+		if (error) {
+			CI_LOG_E("Error Listening: " << error.message() << " val: " << error.value() << " endpoint: " << endpoint);
+			return false;
+		} else
+			return true;
+	});
 }
 
 bool ofxOscReceiver::hasWaitingMessages() {
