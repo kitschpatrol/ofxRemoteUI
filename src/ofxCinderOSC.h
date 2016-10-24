@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Osc.h"
+#include "cinder/osc/Osc.h"
 #include <queue>
 #include <stdio.h>
 
@@ -50,7 +50,7 @@ class ofxOscSender {
 
 public:
 	ofxOscSender();
-	
+
 	void setup(std::string hostname, int port, bool broadcast = false);
 	void sendMessage(ofxOscMessage &message);
 	// void sendBundle( ofxOscBundle& bundle ); // TODO
